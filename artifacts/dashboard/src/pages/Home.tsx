@@ -99,7 +99,7 @@ export default function Home() {
                 <Zap size={18} color="var(--accent)" />
               </div>
               <span style={{ fontFamily: "'Orbitron', sans-serif", fontWeight: 700, fontSize: 16, color: "var(--text-primary)", letterSpacing: "0.04em" }}>
-                DylanBot
+                CometPulse
               </span>
             </div>
             <div style={{ display: "flex", gap: 10 }}>
@@ -138,7 +138,7 @@ export default function Home() {
               color: "#fff",
               letterSpacing: "-0.01em",
             }}>
-              DylanBot
+              CometPulse
             </h1>
             <p style={{ fontSize: 15, color: "var(--text-secondary)", marginBottom: 40, letterSpacing: "0.18em", fontWeight: 500, textTransform: "uppercase" }}>
               Advanced Discord Utility Bot
@@ -232,7 +232,7 @@ export default function Home() {
       <div style={{ background: "var(--bg-primary)", padding: "72px 24px", textAlign: "center" }}>
         <h2 style={{ fontSize: 30, fontWeight: 800, color: "var(--text-primary)", marginBottom: 12 }}>Ready to get started?</h2>
         <p style={{ color: "var(--text-secondary)", marginBottom: 32, fontSize: 15 }}>
-          Add DylanBot to your server and configure everything in minutes.
+          Add CometPulse to your server and configure everything in minutes.
         </p>
         <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
           <a href="/api/auth/login" style={{
@@ -254,7 +254,7 @@ export default function Home() {
       </div>
 
       <footer style={{ padding: "24px", textAlign: "center", color: "var(--text-muted)", fontSize: 12, borderTop: "1px solid var(--border)" }}>
-        © {new Date().getFullYear()} DylanBot · Advanced Discord Utility Bot
+        © {new Date().getFullYear()} CometPulse · Advanced Discord Utility Bot
       </footer>
     </div>
   );

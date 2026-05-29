@@ -131,7 +131,7 @@ export default function DashboardLayout() {
             </div>
             <div>
               <div style={{ fontFamily: "'Orbitron', sans-serif", fontWeight: 700, fontSize: 12, color: "var(--text-primary)", letterSpacing: "0.05em" }}>
-                DylanBot
+                CometPulse
               </div>
               <div style={{ fontSize: 10, color: "var(--text-muted)" }}>Dashboard</div>
             </div>
