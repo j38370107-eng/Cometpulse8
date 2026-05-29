@@ -2,26 +2,28 @@ import type { Command } from "./types";
 import { EmbedBuilder } from "discord.js";
 import { getPrefix } from "../store/prefixes";
 
-const CATEGORIES: Record<string, { emoji: string; names: string[] }> = {
-  General: {
+const CATEGORIES: { name: string; emoji: string; commands: string[] }[] = [
+  {
+    name: "General",
     emoji: "🔧",
-    names: ["help", "changeprefix"],
+    commands: ["help", "changeprefix"],
   },
-  Leveling: {
+  {
+    name: "Leveling",
     emoji: "⚡",
-    names: [
+    commands: [
       "rank",
       "leaderboard",
-      "levelconfig",
       "givexp",
       "setxp",
-      "setlevel",
       "resetxp",
+      "setlevel",
+      "levelconfig",
       "xpexport",
       "xpimport",
     ],
   },
-};
+];
 
 export const helpCommand: Command = {
   name: "help",
@@ -37,8 +39,11 @@ export const helpCommand: Command = {
 
     // ── Specific command lookup ───────────────────────────────────────────────
     if (args[0]) {
-      const name = args[0].toLowerCase().replace(/^c!/, "");
-      const cmd: Command | undefined = commands.get(name);
+      const name = args[0].toLowerCase().replace(/^[^ ]+!/, "");
+      const cmd: Command | undefined =
+        commands.get(name) ??
+        [...commands.values()].find((c) => c.aliases?.includes(name));
+
       if (!cmd) {
         return message.reply(
           `❌ No command called \`${name}\` found. Run \`${prefix}help\` to see all commands.`,
@@ -46,18 +51,14 @@ export const helpCommand: Command = {
       }
 
       const aliases =
-        cmd.aliases.length > 0
+        cmd.aliases?.length > 0
           ? cmd.aliases.map((a) => `\`${prefix}${a}\``).join(", ")
           : "None";
 
       const perms =
         cmd.requiredPermissions && cmd.requiredPermissions.length > 0
           ? cmd.requiredPermissions
-              .map((p) =>
-                typeof p === "bigint"
-                  ? permName(p)
-                  : String(p),
-              )
+              .map((p) => (typeof p === "bigint" ? permName(p) : String(p)))
               .join(", ")
           : "None";
 
@@ -78,57 +79,51 @@ export const helpCommand: Command = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // ── Full command list ─────────────────────────────────────────────────────
+    // ── Full command list (compact style) ─────────────────────────────────────
     const seen = new Set<string>();
-    const fields: { name: string; value: string; inline: boolean }[] = [];
+    const categoryBlocks: string[] = [];
+    let totalCommands = 0;
 
-    for (const [catName, cat] of Object.entries(CATEGORIES)) {
-      const lines: string[] = [];
-      for (const cmdName of cat.names) {
-        if (seen.has(cmdName)) continue;
+    for (const cat of CATEGORIES) {
+      const names: string[] = [];
+      for (const cmdName of cat.commands) {
         const cmd: Command | undefined = commands.get(cmdName);
-        if (!cmd) continue;
+        if (!cmd || seen.has(cmd.name)) continue;
         seen.add(cmd.name);
-        const usage = cmd.usage ? ` ${cmd.usage}` : "";
-        lines.push(`\`${prefix}${cmd.name}${usage}\` — ${cmd.description}`);
+        names.push(cmd.name);
       }
-      if (lines.length > 0) {
-        fields.push({
-          name: `${cat.emoji} ${catName}`,
-          value: lines.join("\n"),
-          inline: false,
-        });
+      if (names.length > 0) {
+        totalCommands += names.length;
+        categoryBlocks.push(`${cat.emoji} **${cat.name}**\n${names.join(", ")}`);
       }
     }
 
-    // Any commands not in a category
-    const uncategorised: string[] = [];
+    // Uncategorised fallback
+    const extra: string[] = [];
     for (const [, cmd] of commands) {
       if (seen.has(cmd.name)) continue;
       seen.add(cmd.name);
-      const usage = cmd.usage ? ` ${cmd.usage}` : "";
-      uncategorised.push(`\`${prefix}${cmd.name}${usage}\` — ${cmd.description}`);
+      extra.push(cmd.name);
+      totalCommands++;
     }
-    if (uncategorised.length > 0) {
-      fields.push({
-        name: "📦 Other",
-        value: uncategorised.join("\n"),
-        inline: false,
-      });
+    if (extra.length > 0) {
+      categoryBlocks.push(`📦 **Other**\n${extra.join(", ")}`);
     }
 
+    const activeCats =
+      CATEGORIES.filter((c) => c.commands.some((n) => commands.has(n))).length +
+      (extra.length > 0 ? 1 : 0);
+
+    const description = [
+      `**${totalCommands} commands** across **${activeCats} categories**.`,
+      `Run \`${prefix}help [command]\` for details on any command.`,
+      "",
+      categoryBlocks.join("\n\n"),
+    ].join("\n");
+
     const embed = new EmbedBuilder()
-      .setTitle("CometPulse — Command List")
       .setColor(0x7c3cfa)
-      .setDescription(
-        `Use \`${prefix}help <command>\` for detailed info on any command.\nCurrent prefix: \`${prefix}\``,
-      )
-      .addFields(fields)
-      .setFooter({
-        text: `${seen.size} commands total`,
-        iconURL: message.client.user?.displayAvatarURL(),
-      })
-      .setTimestamp();
+      .setDescription(description);
 
     return message.channel.send({ embeds: [embed] });
   },
