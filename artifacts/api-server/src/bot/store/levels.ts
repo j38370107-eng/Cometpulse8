@@ -1,5 +1,5 @@
 import { logger } from "../../lib/logger";
-import { dbSet, dbGet, dbGetAll, dbDelete } from "./db";
+import { dbSet, dbGetAll, dbDelete } from "./db";
 
 const STORE = "levels";
 const CONFIG_STORE = "levelconfig";
@@ -14,6 +14,16 @@ export interface LevelRoleReward {
   roleId: string;
 }
 
+export interface RoleMultiplier {
+  roleId: string;
+  multiplier: number;
+}
+
+export interface ChannelMultiplier {
+  channelId: string;
+  multiplier: number;
+}
+
 export interface LevelConfig {
   enabled: boolean;
   channelId: string | null;
@@ -21,19 +31,35 @@ export interface LevelConfig {
   roleRewards: LevelRoleReward[];
   noXpRoles: string[];
   noXpChannels: string[];
+  multiplierRoles: RoleMultiplier[];
+  multiplierChannels: ChannelMultiplier[];
+  boosterMultiplier: number;
+  doubleXpActive: boolean;
+  doubleXpEnd: number | null;
+  dmOnLevelUp: boolean;
+  levelUpMessage: string | null;
+  roleStack: boolean;
 }
 
 const userCache = new Map<string, UserLevel>();
 const configCache = new Map<string, LevelConfig>();
 const xpCooldown = new Map<string, number>();
 
-const DEFAULT_CONFIG: LevelConfig = {
+export const DEFAULT_CONFIG: LevelConfig = {
   enabled: true,
   channelId: null,
   xpRate: 1,
   roleRewards: [],
   noXpRoles: [],
   noXpChannels: [],
+  multiplierRoles: [],
+  multiplierChannels: [],
+  boosterMultiplier: 1.5,
+  doubleXpActive: false,
+  doubleXpEnd: null,
+  dmOnLevelUp: false,
+  levelUpMessage: null,
+  roleStack: true,
 };
 
 export function xpForLevel(level: number): number {
@@ -48,11 +74,17 @@ export function totalXpForLevel(level: number): number {
 
 export function levelFromXp(totalXp: number): number {
   let level = 0;
-  while (totalXp >= xpForLevel(level)) {
-    totalXp -= xpForLevel(level);
+  let remaining = totalXp;
+  while (remaining >= xpForLevel(level)) {
+    remaining -= xpForLevel(level);
     level++;
   }
   return level;
+}
+
+export function xpInCurrentLevel(totalXp: number): number {
+  const level = levelFromXp(totalXp);
+  return totalXp - totalXpForLevel(level);
 }
 
 function userKey(guildId: string, userId: string): string {
@@ -75,12 +107,14 @@ export async function initLevelsStore(): Promise<void> {
     dbGetAll<LevelConfig>(CONFIG_STORE),
   ]);
   for (const { key, data } of rows) userCache.set(key, data);
-  for (const { key, data } of configRows) configCache.set(key, data);
+  for (const { key, data } of configRows) {
+    configCache.set(key, { ...DEFAULT_CONFIG, ...data });
+  }
   logger.info({ users: rows.length, guilds: configRows.length }, "Loaded levels store from DB");
 }
 
 export function getLevelConfig(guildId: string): LevelConfig {
-  return configCache.get(guildId) ?? { ...DEFAULT_CONFIG };
+  return { ...DEFAULT_CONFIG, ...(configCache.get(guildId) ?? {}) };
 }
 
 export function setLevelConfig(guildId: string, config: LevelConfig): void {
@@ -102,6 +136,19 @@ export function resetUserLevel(guildId: string, userId: string): void {
   const key = userKey(guildId, userId);
   userCache.delete(key);
   dbDelete(STORE, key).catch((err) => logger.error({ err }, "Failed to delete level data"));
+}
+
+export function resetGuildLevels(guildId: string): number {
+  const prefix = `${guildId}:`;
+  let count = 0;
+  for (const key of [...userCache.keys()]) {
+    if (key.startsWith(prefix)) {
+      userCache.delete(key);
+      dbDelete(STORE, key).catch(() => {});
+      count++;
+    }
+  }
+  return count;
 }
 
 export function getLeaderboard(
@@ -130,6 +177,38 @@ export function getUserRank(guildId: string, userId: string): number {
   return rank;
 }
 
+export function exportGuildXp(
+  guildId: string,
+): Array<{ userId: string; xp: number; level: number }> {
+  const prefix = `${guildId}:`;
+  const entries: Array<{ userId: string; xp: number; level: number }> = [];
+  for (const [key, data] of userCache.entries()) {
+    if (!key.startsWith(prefix)) continue;
+    entries.push({ userId: key.slice(prefix.length), xp: data.xp, level: data.level });
+  }
+  return entries;
+}
+
+export function importGuildXp(
+  guildId: string,
+  entries: Array<{ userId: string; xp: number; level?: number }>,
+): number {
+  let count = 0;
+  for (const entry of entries) {
+    if (!entry.userId || typeof entry.xp !== "number") continue;
+    const level = entry.level ?? levelFromXp(entry.xp);
+    setUserLevel(guildId, entry.userId, { xp: Math.max(0, entry.xp), level });
+    count++;
+  }
+  return count;
+}
+
+function isDoubleXpActive(config: LevelConfig): boolean {
+  if (!config.doubleXpActive) return false;
+  if (config.doubleXpEnd !== null && Date.now() > config.doubleXpEnd) return false;
+  return true;
+}
+
 const XP_MIN = 15;
 const XP_MAX = 25;
 const XP_COOLDOWN_MS = 60_000;
@@ -138,18 +217,46 @@ export function tryAddXp(
   guildId: string,
   userId: string,
   config: LevelConfig,
-): { leveled: boolean; newLevel: number } | null {
+  context?: { memberRoleIds?: string[]; channelId?: string; isBooster?: boolean },
+): { leveled: boolean; newLevel: number; gained: number } | null {
   const cdKey = `${guildId}:${userId}`;
   const last = xpCooldown.get(cdKey) ?? 0;
   if (Date.now() - last < XP_COOLDOWN_MS) return null;
   xpCooldown.set(cdKey, Date.now());
 
-  const gained = Math.floor((Math.random() * (XP_MAX - XP_MIN + 1) + XP_MIN) * config.xpRate);
+  let multiplier = config.xpRate;
+
+  if (context?.memberRoleIds && config.multiplierRoles.length > 0) {
+    let bestRole = 1;
+    for (const rm of config.multiplierRoles) {
+      if (context.memberRoleIds.includes(rm.roleId) && rm.multiplier > bestRole) {
+        bestRole = rm.multiplier;
+      }
+    }
+    multiplier *= bestRole;
+  }
+
+  if (context?.channelId && config.multiplierChannels.length > 0) {
+    const cm = config.multiplierChannels.find((c) => c.channelId === context.channelId);
+    if (cm) multiplier *= cm.multiplier;
+  }
+
+  if (context?.isBooster && config.boosterMultiplier > 1) {
+    multiplier *= config.boosterMultiplier;
+  }
+
+  if (isDoubleXpActive(config)) {
+    multiplier *= 2;
+  }
+
+  const base = Math.floor(Math.random() * (XP_MAX - XP_MIN + 1) + XP_MIN);
+  const gained = Math.max(1, Math.round(base * multiplier));
+
   const current = getUserLevel(guildId, userId);
   const newXp = current.xp + gained;
   const newLevel = levelFromXp(newXp);
   const leveled = newLevel > current.level;
 
   setUserLevel(guildId, userId, { xp: newXp, level: newLevel });
-  return { leveled, newLevel };
+  return { leveled, newLevel, gained };
 }

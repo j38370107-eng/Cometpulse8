@@ -10,7 +10,7 @@ import { runAutomod } from "../lib/runAutomod";
 import { isCommandDisabled } from "../store/disabledCommands";
 import { checkCommandPerm } from "../store/commandPerms";
 import { getCustomCommand } from "../store/customCommands";
-import { getLevelConfig, tryAddXp } from "../store/levels";
+import { getLevelConfig, tryAddXp, getUserRank } from "../store/levels";
 
 // ── Cooldown tracker (in-memory, resets on restart) ──────────────────────────
 // key: `cmdId:scope` where scope = userId | channelId | "global"
@@ -221,24 +221,62 @@ export function registerMessageHandler(client: Client) {
         !lvlConfig.noXpChannels.includes(message.channelId) &&
         !message.member?.roles.cache.some((r) => lvlConfig.noXpRoles.includes(r.id))
       ) {
-        const result = tryAddXp(guildId, message.author.id, lvlConfig);
+        const memberRoleIds = message.member
+          ? [...message.member.roles.cache.keys()]
+          : [];
+        const isBooster = !!message.member?.premiumSince;
+
+        const result = tryAddXp(guildId, message.author.id, lvlConfig, {
+          memberRoleIds,
+          channelId: message.channelId,
+          isBooster,
+        });
+
         if (result?.leveled) {
           const { newLevel } = result;
           const announceChannelId = lvlConfig.channelId ?? message.channelId;
           const announceChannel =
             message.guild.channels.cache.get(announceChannelId) ?? message.channel;
+
+          // Role reward: assign new role, optionally remove previous reward roles
           const roleReward = lvlConfig.roleRewards.find((r) => r.level === newLevel);
           let roleMsg = "";
-          if (roleReward) {
+          if (roleReward && message.member) {
             const role = message.guild.roles.cache.get(roleReward.roleId);
-            if (role && message.member) {
+            if (role) {
               await message.member.roles.add(role).catch(() => {});
-              roleMsg = ` You've also been given the **${role.name}** role!`;
+              roleMsg = ` You've also earned the **${role.name}** role!`;
+
+              // Replace mode: remove previous reward roles
+              if (!lvlConfig.roleStack) {
+                const prevRewards = lvlConfig.roleRewards
+                  .filter((r) => r.level < newLevel)
+                  .map((r) => r.roleId);
+                for (const prevRoleId of prevRewards) {
+                  if (message.member.roles.cache.has(prevRoleId)) {
+                    await message.member.roles.remove(prevRoleId).catch(() => {});
+                  }
+                }
+              }
             }
           }
-          await (announceChannel as TextChannel)
-            .send(`🎉 Congrats <@${message.author.id}>, you leveled up to **Level ${newLevel}**!${roleMsg}`)
-            .catch(() => {});
+
+          // Build announcement text
+          const rank = getUserRank(guildId, message.author.id);
+          let announceText = lvlConfig.levelUpMessage
+            ? lvlConfig.levelUpMessage
+                .replace(/\{user\}/g, `<@${message.author.id}>`)
+                .replace(/\{level\}/g, String(newLevel))
+                .replace(/\{rank\}/g, `#${rank}`)
+            : `🎉 Congrats <@${message.author.id}>, you leveled up to **Level ${newLevel}**!${roleMsg}`;
+
+          await (announceChannel as TextChannel).send(announceText).catch(() => {});
+
+          // DM notification
+          if (lvlConfig.dmOnLevelUp) {
+            const dmText = `🎉 You leveled up to **Level ${newLevel}** in **${message.guild.name}**!${roleMsg}`;
+            await message.author.send(dmText).catch(() => {});
+          }
         }
       }
     }
