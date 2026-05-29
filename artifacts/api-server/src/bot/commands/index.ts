@@ -1,8 +1,10 @@
 import { Client, Collection } from "discord.js";
 import type { Command } from "./types";
 import { changePrefixCommand } from "./changeprefix";
+import { helpCommand } from "./help";
 
 export const commands: Command[] = [
+  helpCommand,
   changePrefixCommand,
 ];
 
