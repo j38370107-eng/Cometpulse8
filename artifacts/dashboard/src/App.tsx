@@ -8,21 +8,7 @@ import Apply from "./pages/Apply";
 import DashboardLayout from "./components/DashboardLayout";
 import Overview from "./pages/dashboard/Overview";
 import Settings from "./pages/dashboard/Settings";
-import Shortcuts from "./pages/dashboard/Shortcuts";
-import Commands from "./pages/dashboard/Commands";
-import Cases from "./pages/dashboard/Cases";
-import Automod from "./pages/dashboard/Automod";
-import Punishments from "./pages/dashboard/Punishments";
-import Logging from "./pages/dashboard/Logging";
-import AuditLog from "./pages/dashboard/AuditLog";
-import Applications from "./pages/dashboard/Applications";
-import CommandPerms from "./pages/dashboard/CommandPerms";
-import Tickets from "./pages/dashboard/Tickets";
-import AntiNuke from "./pages/dashboard/AntiNuke";
-import AntiRaid from "./pages/dashboard/AntiRaid";
-import PunishmentInfo from "./pages/dashboard/PunishmentInfo";
-import ModerationConfig from "./pages/dashboard/ModerationConfig";
-import CustomCommands from "./pages/dashboard/CustomCommands";
+import Levels from "./pages/dashboard/Levels";
 
 interface AuthCtx {
   user: any | null;
@@ -62,7 +48,6 @@ export default function App() {
 
   useEffect(() => { refetch(); }, []);
 
-  // Sync muted state with audio element
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -81,7 +66,6 @@ export default function App() {
     }
   }, [muted]);
 
-  // Try autoplay on mount
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -93,7 +77,6 @@ export default function App() {
     });
   }, []);
 
-  // On first interaction, start music automatically
   useEffect(() => {
     if (!needsClick) return;
     const unlock = () => {
@@ -117,12 +100,7 @@ export default function App() {
   return (
     <AuthContext.Provider value={{ user, loading, refetch }}>
       <MusicContext.Provider value={{ muted, toggleMute }}>
-        <audio
-          ref={audioRef}
-          src="/music.mp3"
-          loop
-          style={{ display: "none" }}
-        />
+        <audio ref={audioRef} src="/music.mp3" loop style={{ display: "none" }} />
         {needsClick && (
           <div style={{
             position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)",
@@ -146,22 +124,8 @@ export default function App() {
             <Route path="/apply/:guildId/:formId" element={<Apply />} />
             <Route path="/dashboard/:guildId" element={<RequireAuth><DashboardLayout /></RequireAuth>}>
               <Route index element={<Overview />} />
+              <Route path="levels" element={<Levels />} />
               <Route path="settings" element={<Settings />} />
-              <Route path="shortcuts" element={<Shortcuts />} />
-              <Route path="commands" element={<Commands />} />
-              <Route path="cases" element={<Cases />} />
-              <Route path="automod" element={<Automod />} />
-              <Route path="punishments" element={<Punishments />} />
-              <Route path="logging" element={<Logging />} />
-              <Route path="audit-log" element={<AuditLog />} />
-              <Route path="applications" element={<Applications />} />
-              <Route path="command-perms" element={<CommandPerms />} />
-              <Route path="tickets" element={<Tickets />} />
-              <Route path="antinuke" element={<AntiNuke />} />
-              <Route path="antiraid" element={<AntiRaid />} />
-              <Route path="punishment-info" element={<PunishmentInfo />} />
-              <Route path="moderation" element={<ModerationConfig />} />
-              <Route path="custom-commands" element={<CustomCommands />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

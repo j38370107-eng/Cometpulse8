@@ -3,10 +3,8 @@ import { useAuth, useMusic } from "../App";
 import { api } from "../lib/api";
 import { useState, useEffect } from "react";
 import {
-  LayoutDashboard, Settings, Zap, Shield, FileText,
-  Bot, Ban, Search, LogOut, ChevronLeft, Bell, Lock,
-  ClipboardList, Ticket, ShieldAlert, Users, Info,
-  Volume2, VolumeX, SlidersHorizontal, Terminal,
+  LayoutDashboard, Settings, Zap, LogOut, ChevronLeft,
+  Volume2, VolumeX,
 } from "lucide-react";
 
 const INVITE_URL = "https://discord.com/oauth2/authorize?client_id=1507550967275458660&permissions=6293600228863223&integration_type=0&scope=bot";
@@ -19,38 +17,14 @@ const NAV_SECTIONS = [
     ],
   },
   {
-    label: "Moderation",
+    label: "Modules",
     items: [
-      { to: "moderation", label: "Moderation Config", icon: SlidersHorizontal },
-      { to: "cases", label: "Case Log", icon: FileText },
-      { to: "punishments", label: "Active Punishments", icon: Ban },
-      { to: "punishment-info", label: "Punishment Info", icon: Info },
-    ],
-  },
-  {
-    label: "Protection",
-    items: [
-      { to: "automod", label: "AutoMod", icon: Shield },
-      { to: "antinuke", label: "Anti-Nuke", icon: ShieldAlert },
-      { to: "antiraid", label: "Anti-Raid", icon: Users },
-    ],
-  },
-  {
-    label: "Commands",
-    items: [
-      { to: "shortcuts", label: "Shortcuts", icon: Zap },
-      { to: "commands", label: "Command Modules", icon: Bot },
-      { to: "command-perms", label: "Permissions", icon: Lock },
-      { to: "custom-commands", label: "Custom Commands", icon: Terminal },
+      { to: "levels", label: "Levels", icon: Zap },
     ],
   },
   {
     label: "Server",
     items: [
-      { to: "logging", label: "Server Logging", icon: Bell },
-      { to: "audit-log", label: "Audit Log", icon: Search },
-      { to: "applications", label: "Applications", icon: ClipboardList },
-      { to: "tickets", label: "Tickets", icon: Ticket },
       { to: "settings", label: "Settings", icon: Settings },
     ],
   },
@@ -109,7 +83,7 @@ export default function DashboardLayout() {
     <div style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
       {/* Sidebar */}
       <aside style={{
-        width: 244, flexShrink: 0,
+        width: 220, flexShrink: 0,
         background: "var(--bg-secondary)",
         borderRight: "1px solid var(--border)",
         display: "flex", flexDirection: "column",
@@ -189,7 +163,7 @@ export default function DashboardLayout() {
                   {section.label}
                 </div>
               )}
-              {section.items.map(({ to, label, icon: Icon, end }) => (
+              {section.items.map(({ to, label, icon: Icon, end }: any) => (
                 <NavLink
                   key={to}
                   to={to}

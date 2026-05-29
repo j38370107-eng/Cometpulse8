@@ -543,6 +543,49 @@ router.put("/:guildId/app-config", ...auth, async (req: any, res: any) => {
   res.json({ ok: true });
 });
 
+// ── Level Config ─────────────────────────────────────────────────────────────
+router.get("/:guildId/level-config", ...auth, async (req: any, res: any) => {
+  const { guildId } = req.params;
+  const config = (await dbGet<any>("levelconfig", guildId)) ?? {};
+  res.json({
+    enabled: true,
+    channelId: null,
+    xpRate: 1,
+    roleRewards: [],
+    noXpRoles: [],
+    noXpChannels: [],
+    multiplierRoles: [],
+    multiplierChannels: [],
+    boosterMultiplier: 1.5,
+    doubleXpActive: false,
+    doubleXpEnd: null,
+    dmOnLevelUp: false,
+    levelUpMessage: null,
+    roleStack: true,
+    ...config,
+  });
+});
+
+router.put("/:guildId/level-config", ...auth, async (req: any, res: any) => {
+  const { guildId } = req.params;
+  const existing = (await dbGet<any>("levelconfig", guildId)) ?? {};
+  await dbSet("levelconfig", guildId, { ...existing, ...req.body });
+  res.json({ ok: true });
+});
+
+// ── Leaderboard ───────────────────────────────────────────────────────────────
+router.get("/:guildId/leaderboard", ...auth, async (req: any, res: any) => {
+  const { guildId } = req.params;
+  const rows = await dbGetByGuildPrefix("levels", guildId);
+  const entries = rows.map((r: any) => ({
+    userId: r.key.slice(guildId.length + 1),
+    level: r.data?.level ?? 0,
+    xp: r.data?.xp ?? 0,
+  }));
+  entries.sort((a: any, b: any) => b.xp - a.xp);
+  res.json(entries.slice(0, 20));
+});
+
 // ── Custom Commands ───────────────────────────────────────────────────────────
 router.get("/:guildId/custom-commands", ...auth, async (req: any, res: any) => {
   const { guildId } = req.params;

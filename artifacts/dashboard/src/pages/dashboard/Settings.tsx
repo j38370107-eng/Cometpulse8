@@ -49,24 +49,16 @@ export default function Settings() {
     <div style={{ padding: "32px 32px 96px", maxWidth: 720 }}>
       {ToastEl}
       <PageHeader title="Server Settings" subtitle="General bot configuration for this server" />
-      <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-        <Card>
-          <h2 style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: 20 }}>⚡ General</h2>
-          <Input
-            label="Command Prefix"
-            value={form.prefix}
-            onChange={(v) => set("prefix", v)}
-            placeholder=">"
-            hint="The character users type before commands (e.g. >, !, .)"
-          />
-        </Card>
-        <div style={{ padding: "12px 16px", background: "var(--bg-input)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12, color: "var(--text-secondary)" }}>
-          💡 <strong style={{ color: "var(--text-primary)" }}>Server log channel</strong> is configured in{" "}
-          <a href="logging" style={{ color: "var(--accent)", textDecoration: "none", fontWeight: 600 }}>Logging</a>.{" "}
-          <strong style={{ color: "var(--text-primary)" }}>AutoMod warning expiry</strong> is in{" "}
-          <a href="automod" style={{ color: "var(--accent)", textDecoration: "none", fontWeight: 600 }}>AutoMod</a>.
-        </div>
-      </div>
+      <Card>
+        <h2 style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: 20 }}>⚡ General</h2>
+        <Input
+          label="Command Prefix"
+          value={form.prefix}
+          onChange={(v) => set("prefix", v)}
+          placeholder=">"
+          hint="The character users type before commands (e.g. c!, >, !)"
+        />
+      </Card>
       <SaveBar dirty={dirty} saving={saving} onSave={save} onDiscard={discard} />
     </div>
   );
