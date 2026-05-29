@@ -1,0 +1,4 @@
+- [Project stack](stack.md) — discord.js v14 + Express 5 + React/Vite dashboard, pnpm monorepo; bot token is intentionally invalid (pre-existing)
+- [Custom commands store](custom-commands.md) — 50-cap per guild, "warm"/"bam" presets in dashboard; DB key "customCommands", hooked in messageCreate
+- [Ticket open message](ticket-open-message.md) — configurable via dashboard Settings tab; stored as cfg.openMessage in ticketConfig DB key
+- [App config](app-config.md) — cooldown, notifyApplicant, blacklist stored under DB key "appConfig"; separate from application forms

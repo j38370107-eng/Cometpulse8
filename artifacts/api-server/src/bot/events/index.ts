@@ -1,0 +1,30 @@
+import { Client } from "discord.js";
+import { registerReadyHandler } from "./ready";
+import { registerMessageHandler } from "./messageCreate";
+import { registerMemberUpdateHandler } from "./guildMemberUpdate";
+import { registerServerLogEvents } from "./serverLogs";
+import { registerAntiNukeEvents } from "./antinuke";
+import { registerAntiRaidEvents } from "./antiraid";
+import { registerTicketButtons } from "./ticketButtons";
+import { registerApplicationButtons } from "./applicationButtons";
+import { registerInviteTracking } from "./inviteTrack";
+import { registerChannelCreate } from "./channelCreate";
+import { registerMemberJoin } from "./guildMemberAdd";
+import { registerMessageUpdate } from "./messageUpdate";
+import { registerSnipeEvents } from "./snipeEvents";
+
+export function registerEvents(client: Client) {
+  registerReadyHandler(client);
+  registerMessageHandler(client);
+  registerMessageUpdate(client);
+  registerMemberUpdateHandler(client);
+  registerServerLogEvents(client);
+  registerAntiNukeEvents(client);
+  registerAntiRaidEvents(client);
+  registerTicketButtons(client);
+  registerApplicationButtons(client);
+  registerInviteTracking(client);
+  registerChannelCreate(client);
+  registerMemberJoin(client);
+  registerSnipeEvents(client);
+}
