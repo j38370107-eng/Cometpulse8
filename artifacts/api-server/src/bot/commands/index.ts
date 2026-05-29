@@ -1,6 +1,7 @@
 import { Client, Collection } from "discord.js";
 import type { Command } from "./types";
 import { changePrefixCommand } from "./changeprefix";
+import { helpCommand } from "./help";
 import { rankCommand } from "./leveling/rank";
 import { leaderboardCommand } from "./leveling/leaderboard";
 import { setXpCommand } from "./leveling/setxp";
@@ -11,6 +12,7 @@ import { levelConfigCommand } from "./leveling/levelconfig";
 import { xpExportCommand, xpImportCommand } from "./leveling/xpexport";
 
 export const commands: Command[] = [
+  helpCommand,
   changePrefixCommand,
   rankCommand,
   leaderboardCommand,
