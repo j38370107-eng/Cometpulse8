@@ -1,7 +1,10 @@
 import { Client, Collection } from "discord.js";
 import type { Command } from "./types";
+import { changePrefixCommand } from "./changeprefix";
 
-export const commands: Command[] = [];
+export const commands: Command[] = [
+  changePrefixCommand,
+];
 
 export function loadCommands(client: Client) {
   const collection: Collection<string, Command> = new Collection();

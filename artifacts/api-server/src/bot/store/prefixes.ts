@@ -1,6 +1,6 @@
 import { getGuildSetting, setGuildSetting } from "./settings";
 
-const DEFAULT_PREFIX = ">";
+const DEFAULT_PREFIX = "c!";
 
 export function getPrefix(guildId: string): string {
   return getGuildSetting(guildId, "prefix") ?? DEFAULT_PREFIX;
