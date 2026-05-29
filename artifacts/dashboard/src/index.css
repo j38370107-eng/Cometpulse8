@@ -1,22 +1,23 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Orbitron:wght@700;900&display=swap');
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg-primary: #0b0d1a;
-  --bg-secondary: #0f1121;
-  --bg-card: #141828;
-  --bg-card-hover: #191d30;
-  --bg-input: #1a1f35;
-  --border: #252a42;
-  --border-accent: #f0a500;
-  --text-primary: #f0f2ff;
-  --text-secondary: #8892b0;
-  --text-muted: #535c7a;
-  --accent: #f0a500;
-  --accent-hover: #d4920a;
-  --accent-dim: rgba(240,165,0,0.15);
-  --accent-glow: rgba(240,165,0,0.25);
+  --bg-primary: #07050f;
+  --bg-secondary: #0a0717;
+  --bg-card: #110d1f;
+  --bg-card-hover: #17122a;
+  --bg-input: #15102a;
+  --border: #2a1f4a;
+  --border-accent: #7c3aed;
+  --text-primary: #f0efff;
+  --text-secondary: #9b8fc0;
+  --text-muted: #5a4f7a;
+  --accent: #8b5cf6;
+  --accent-hover: #7c3aed;
+  --accent-dim: rgba(139,92,246,0.15);
+  --accent-glow: rgba(139,92,246,0.3);
+  --accent-bright: #a78bfa;
   --danger: #ef4444;
   --danger-dim: rgba(239,68,68,0.15);
   --success: #22c55e;
@@ -51,12 +52,22 @@ input, textarea, select { font-family: inherit; }
 }
 
 .hex-bg {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='49' viewBox='0 0 28 49'%3E%3Cg fill-rule='evenodd'%3E%3Cg id='hexagons' fill='%23f0a500' fill-opacity='0.04' fill-rule='nonzero'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9zM0 15l12.98-7.5V0h-2v6.35L0 12.69v2.3zm0 18.5L12.98 41v8h-2v-6.85L0 35.81v-2.3zM15 0v7.5L27.99 15H28v-2.31h-.01L17 6.35V0h-2zm0 49v-8l12.99-7.5H28v2.31h-.01L17 42.15V49h-2z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='49' viewBox='0 0 28 49'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%238b5cf6' fill-opacity='0.05' fill-rule='nonzero'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9zM0 15l12.98-7.5V0h-2v6.35L0 12.69v2.3zm0 18.5L12.98 41v8h-2v-6.85L0 35.81v-2.3zM15 0v7.5L27.99 15H28v-2.31h-.01L17 6.35V0h-2zm0 49v-8l12.99-7.5H28v2.31h-.01L17 42.15V49h-2z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
 }
 
 .grid-bg {
-  background-image: linear-gradient(var(--border) 1px, transparent 1px),
-    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-image: linear-gradient(rgba(139,92,246,0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(139,92,246,0.07) 1px, transparent 1px);
   background-size: 40px 40px;
   background-color: var(--bg-secondary);
+}
+
+@keyframes float-glow {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+.glow-orb { animation: float-glow 4s ease-in-out infinite; }
+
+@keyframes dash-move {
+  to { stroke-dashoffset: -40; }
 }
