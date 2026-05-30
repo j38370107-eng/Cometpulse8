@@ -269,7 +269,7 @@ export default function Giveaways() {
             <h1 style={{ fontSize: 20, fontWeight: 700, color: "var(--text-primary)", margin: 0 }}>Giveaways</h1>
           </div>
           <p style={{ fontSize: 12, color: "var(--text-muted)", margin: 0 }}>
-            Manage giveaways, view entries, configure defaults. Start giveaways in Discord with <code style={{ background: "var(--bg-secondary)", padding: "1px 5px", borderRadius: 4 }}>c!gstart</code>.
+            Manage giveaways, view entries, configure defaults. Start giveaways in Discord with <code style={{ background: "var(--bg-secondary)", padding: "1px 5px", borderRadius: 4 }}>c!gstart</code>
           </p>
         </div>
         <button
