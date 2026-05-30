@@ -31,5 +31,13 @@ export const api = {
       request<any>(`/guilds/${id}/level-config`, { method: "PUT", body: JSON.stringify(data) }),
     leaderboard: (id: string) => request<any[]>(`/guilds/${id}/leaderboard`),
     botStatus: (id: string) => request<{ present: boolean }>(`/guilds/${id}/bot-status`),
+    giveaways: (id: string) => request<any[]>(`/guilds/${id}/giveaways`),
+    giveawayConfig: (id: string) => request<any>(`/guilds/${id}/giveaway-config`),
+    updateGiveawayConfig: (id: string, data: any) =>
+      request<any>(`/guilds/${id}/giveaway-config`, { method: "PUT", body: JSON.stringify(data) }),
+    cancelGiveaway: (id: string, giveawayId: string) =>
+      request<any>(`/guilds/${id}/giveaways/${giveawayId}/cancel`, { method: "POST" }),
+    rerollGiveaway: (id: string, giveawayId: string) =>
+      request<any>(`/guilds/${id}/giveaways/${giveawayId}/reroll`, { method: "POST" }),
   },
 };

@@ -4,6 +4,8 @@ import pinoHttp from "pino-http";
 import router from "./routes";
 import { logger } from "./lib/logger";
 import { reloadGuildSettings } from "./bot/store/settings";
+import { endGiveaway, rerollGiveaway, cancelTimer } from "./bot/giveaway/manager";
+import { getGiveaway, saveGiveaway } from "./bot/store/giveaways";
 
 const app: Express = express();
 
@@ -38,6 +40,30 @@ app.post('/internal/reload/:guildId', async (req: any, res: any) => {
     res.json({ ok: true });
   } catch {
     res.status(500).json({ error: "reload failed" });
+  }
+});
+
+app.post('/internal/giveaway-cancel/:guildId/:id', async (req: any, res: any) => {
+  try {
+    const { guildId, id } = req.params;
+    const g = getGiveaway(guildId, id);
+    if (!g) return res.status(404).json({ error: "not found" });
+    cancelTimer(g);
+    const updated = { ...g, cancelled: true, ended: true };
+    saveGiveaway(updated);
+    res.json({ ok: true });
+  } catch {
+    res.status(500).json({ error: "cancel failed" });
+  }
+});
+
+app.get('/internal/giveaway-reroll/:guildId/:id', async (req: any, res: any) => {
+  try {
+    const { guildId, id } = req.params;
+    const winners = await rerollGiveaway(guildId, id);
+    res.json({ winners });
+  } catch {
+    res.status(500).json({ error: "reroll failed" });
   }
 });
 

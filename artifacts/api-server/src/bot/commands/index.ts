@@ -10,6 +10,12 @@ import { giveXpCommand } from "./leveling/givexp";
 import { setLevelCommand } from "./leveling/setlevel";
 import { levelConfigCommand } from "./leveling/levelconfig";
 import { xpExportCommand, xpImportCommand } from "./leveling/xpexport";
+import { gstartCommand } from "./giveaway/start";
+import { gendCommand } from "./giveaway/end";
+import { grerollCommand } from "./giveaway/reroll";
+import { glistCommand } from "./giveaway/list";
+import { gcancelCommand } from "./giveaway/cancel";
+import { gbonusCommand } from "./giveaway/bonus";
 
 export const commands: Command[] = [
   helpCommand,
@@ -23,6 +29,12 @@ export const commands: Command[] = [
   levelConfigCommand,
   xpExportCommand,
   xpImportCommand,
+  gstartCommand,
+  gendCommand,
+  grerollCommand,
+  glistCommand,
+  gcancelCommand,
+  gbonusCommand,
 ];
 
 export function loadCommands(client: Client) {

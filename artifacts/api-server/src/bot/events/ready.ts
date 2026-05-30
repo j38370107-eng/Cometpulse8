@@ -2,6 +2,7 @@ import { Client, ActivityType } from "discord.js";
 import { logger } from "../../lib/logger";
 import { scheduleAllTimedBans } from "../store/timedBans";
 import { scheduleAllTimedMutes } from "../store/timedMutes";
+import { initGiveawayManager } from "../giveaway/manager";
 import { dbSet, dbGet } from "../store/db";
 
 export function registerReadyHandler(client: Client) {
@@ -10,6 +11,7 @@ export function registerReadyHandler(client: Client) {
     c.user.setActivity("the server", { type: ActivityType.Watching });
     scheduleAllTimedBans(client);
     scheduleAllTimedMutes(client);
+    initGiveawayManager(client);
 
     // Persist a server-start anchor once so uptime survives restarts
     const existing = await dbGet<{ startMs: number }>( "_meta", "serverStart").catch(() => null);

@@ -9,6 +9,7 @@ import DashboardLayout from "./components/DashboardLayout";
 import Overview from "./pages/dashboard/Overview";
 import Settings from "./pages/dashboard/Settings";
 import Levels from "./pages/dashboard/Levels";
+import Giveaways from "./pages/dashboard/Giveaways";
 
 interface AuthCtx {
   user: any | null;
@@ -126,6 +127,7 @@ export default function App() {
               <Route index element={<Overview />} />
               <Route path="levels" element={<Levels />} />
               <Route path="settings" element={<Settings />} />
+              <Route path="giveaways" element={<Giveaways />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

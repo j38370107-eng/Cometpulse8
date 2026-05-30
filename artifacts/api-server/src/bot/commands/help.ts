@@ -23,6 +23,11 @@ const CATEGORIES: { name: string; emoji: string; commands: string[] }[] = [
       "xpimport",
     ],
   },
+  {
+    name: "Giveaways",
+    emoji: "🎉",
+    commands: ["gstart", "gend", "greroll", "glist", "gcancel", "gbonus"],
+  },
 ];
 
 export const helpCommand: Command = {
