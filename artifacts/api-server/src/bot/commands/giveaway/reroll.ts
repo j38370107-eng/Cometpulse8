@@ -11,7 +11,7 @@ function canRunGiveaway(message: any): boolean {
   if (!message.guild) return false;
   const member = message.member;
   if (!member) return false;
-  if (member.permissions.has(PermissionFlagsBits.ManageGuild)) return true;
+  if (member.permissions.has(PermissionFlagsBits.ManageMessages)) return true;
   const config = getGiveawayConfig(message.guild.id);
   return config.managerRoles.length > 0 && config.managerRoles.some((r: string) => member.roles.cache.has(r));
 }
@@ -21,6 +21,7 @@ export const grerollCommand: Command = {
   aliases: ["giveaway-reroll", "rerollgiveaway"],
   description: "Reroll winner(s) for an ended giveaway.",
   usage: "<message-id or giveaway-id> [winner-count]",
+  requiredPermissions: [PermissionFlagsBits.ManageMessages],
   async execute(message, args) {
     if (!message.guild) return;
     if (!canRunGiveaway(message)) {

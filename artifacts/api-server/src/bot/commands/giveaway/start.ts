@@ -18,7 +18,7 @@ function canRunGiveaway(message: any): boolean {
   if (!message.guild) return false;
   const member = message.member;
   if (!member) return false;
-  if (member.permissions.has(PermissionFlagsBits.ManageGuild)) return true;
+  if (member.permissions.has(PermissionFlagsBits.ManageMessages)) return true;
   const config = getGiveawayConfig(message.guild.id);
   if (config.managerRoles.length > 0) {
     return config.managerRoles.some((r: string) =>
@@ -33,7 +33,7 @@ export const gstartCommand: Command = {
   aliases: ["giveaway-start", "gcreate"],
   description: "Start a giveaway.",
   usage: "<duration> <winners> <prize...> [--requirerole @role] [--blackrole @role] [--bonusrole @role:N] [--levelbonus level:bonus] [--mindays N] [--minlevel N] [--booster N] [--channel #channel] [--announce #channel] [--type normal|role-locked|level-gated|partner] [--partner Name]",
-  requiredPermissions: [],
+  requiredPermissions: [PermissionFlagsBits.ManageMessages],
   async execute(message, args) {
     if (!message.guild) return;
     if (!canRunGiveaway(message)) {

@@ -5,49 +5,28 @@ import { Card, Toggle, PageHeader, Badge, Spinner, useToast, SaveBar } from "../
 import { Bot, Search } from "lucide-react";
 
 const COMMAND_GROUPS: Record<string, string[]> = {
-  "Moderation": [
-    "ban","unban","kick","mute","unmute","warn",
-    "purge","slowmode","lock","unlock","lockdown","modnick","nick",
+  "🔧 General": [
+    "help",
+    "changeprefix",
   ],
-  "Cases & Records": [
-    "warnings","note","viewnote","delnote","editnote",
-    "case","delcase","reason",
-    "baninfo","duration","activeactions","modstats",
+  "⚡ Leveling": [
+    "rank",
+    "leaderboard",
+    "givexp",
+    "setxp",
+    "resetxp",
+    "setlevel",
+    "levelconfig",
+    "xpexport",
+    "xpimport",
   ],
-  "AutoMod": [
-    "automod","muteconfig","setautomodwarnexpiry","setexpiredate",
-  ],
-  "Security": [
-    "antinuke","antiraid",
-  ],
-  "Permissions": [
-    "modrole","protectedrole","addrole","removerole",
-    "lock","unlock","lockdown","slowmode",
-    "modnick","nick",
-    "changeprefix","resetconfig","setmodlogs","setserverlogs",
-  ],
-  "Configuration": [
-    "setmodlogs","setserverlogs","changeprefix",
-    "additionalinformation","backup","resetconfig",
-  ],
-  "Tickets": [
-    "ticket","tblacklist","tunblacklist",
-  ],
-  "Applications": [
-    "apply","ablacklist","aunblacklist",
-  ],
-  "Invite Tracking": [
-    "invites","inviteleaderboard",
-  ],
-  "Shortcuts & Aliases": [
-    "shortcut","alias",
-  ],
-  "Utility": [
-    "ping","botinfo","userinfo","serverinfo",
-    "afk","afkreset","remind",
-    "alt","clearalt","altslist",
-    "snipe","editsnipe","clearsnipe",
-    "dashboard","help",
+  "🎉 Giveaways": [
+    "gstart",
+    "gend",
+    "greroll",
+    "glist",
+    "gcancel",
+    "gbonus",
   ],
 };
 

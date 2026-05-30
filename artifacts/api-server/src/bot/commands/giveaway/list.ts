@@ -1,5 +1,5 @@
 import type { Command } from "../types";
-import { EmbedBuilder } from "discord.js";
+import { EmbedBuilder, PermissionFlagsBits } from "discord.js";
 import { getActiveGiveaways } from "../../store/giveaways";
 import { formatDuration } from "../../giveaway/parse";
 
@@ -8,6 +8,7 @@ export const glistCommand: Command = {
   aliases: ["giveaways", "activegiveaways", "giveaway-list"],
   description: "List all active giveaways in this server.",
   usage: "",
+  requiredPermissions: [PermissionFlagsBits.ManageMessages],
   async execute(message) {
     if (!message.guild) return;
 

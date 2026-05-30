@@ -4,30 +4,22 @@ import { api } from "../../lib/api";
 import { Card, Button, Select, PageHeader, Badge, Spinner, Modal, useToast } from "../../components/ui";
 import { Lock, Plus, Trash2, Search } from "lucide-react";
 
-const ALL_COMMANDS = [
-  // Moderation
-  "ban","unban","kick","mute","unmute","warn","warnings","purge","slowmode","lock","unlock","lockdown","modnick","nick",
-  // Cases & Records
-  "case","delcase","reason","note","viewnote","delnote","editnote","baninfo","duration","activeactions","modstats",
-  // AutoMod
-  "automod","muteconfig","setautomodwarnexpiry","setexpiredate",
-  // Security
-  "antinuke","antiraid",
-  // Role & Permissions
-  "modrole","protectedrole","addrole","removerole",
-  // Configuration
-  "setmodlogs","setserverlogs","changeprefix","additionalinformation","backup","resetconfig",
-  // Tickets
-  "ticket","tblacklist","tunblacklist",
-  // Applications
-  "apply","ablacklist","aunblacklist",
-  // Invite Tracking
-  "invites","inviteleaderboard",
-  // Shortcuts & Aliases
-  "shortcut","alias",
-  // Utility
-  "ping","botinfo","userinfo","serverinfo","afk","afkreset","remind","alt","clearalt","altslist","snipe","editsnipe","clearsnipe","dashboard","help",
+const COMMAND_CATEGORIES: { label: string; commands: string[] }[] = [
+  {
+    label: "🔧 General",
+    commands: ["help", "changeprefix"],
+  },
+  {
+    label: "⚡ Leveling",
+    commands: ["rank", "leaderboard", "givexp", "setxp", "resetxp", "setlevel", "levelconfig", "xpexport", "xpimport"],
+  },
+  {
+    label: "🎉 Giveaways",
+    commands: ["gstart", "gend", "greroll", "glist", "gcancel", "gbonus"],
+  },
 ];
+
+const ALL_COMMANDS = COMMAND_CATEGORIES.flatMap(c => c.commands);
 
 export default function CommandPerms() {
   const { guildId } = useParams<{ guildId: string }>();
@@ -103,7 +95,6 @@ export default function CommandPerms() {
   if (loading) return <Spinner />;
 
   const selectedPerm = selected ? getPerm(selected) : null;
-  const filteredCmds = ALL_COMMANDS.filter(c => c.includes(search.toLowerCase()));
 
   return (
     <div style={{ padding:"32px 32px 48px" }}>
@@ -157,20 +148,31 @@ export default function CommandPerms() {
             onFocus={e => (e.target.style.borderColor = "var(--accent)")}
             onBlur={e => (e.target.style.borderColor = "var(--border)")} />
         </div>
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(160px,1fr))", gap:8 }}>
-          {filteredCmds.map(cmd => {
-            const hasConfig = configuredCommands.includes(cmd);
+        <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
+          {COMMAND_CATEGORIES.map(cat => {
+            const shown = cat.commands.filter(c => c.includes(search.toLowerCase()));
+            if (shown.length === 0) return null;
             return (
-              <button key={cmd} onClick={() => setSelected(cmd)} style={{
-                padding:"8px 12px", background: hasConfig ? "var(--accent-dim)" : "var(--bg-input)",
-                border:`1px solid ${hasConfig ? "rgba(240,165,0,0.3)" : "var(--border)"}`,
-                borderRadius:8, color: hasConfig ? "var(--accent)" : "var(--text-secondary)",
-                fontSize:12, fontWeight:600, cursor:"pointer", textAlign:"left", fontFamily:"inherit",
-                display:"flex", alignItems:"center", justifyContent:"space-between",
-              }}>
-                <code>{cmd}</code>
-                {hasConfig && <Lock size={11} />}
-              </button>
+              <div key={cat.label}>
+                <div style={{ fontSize:11, fontWeight:700, color:"var(--text-muted)", textTransform:"uppercase", letterSpacing:"0.06em", marginBottom:8 }}>{cat.label}</div>
+                <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(160px,1fr))", gap:8 }}>
+                  {shown.map(cmd => {
+                    const hasConfig = configuredCommands.includes(cmd);
+                    return (
+                      <button key={cmd} onClick={() => setSelected(cmd)} style={{
+                        padding:"8px 12px", background: hasConfig ? "var(--accent-dim)" : "var(--bg-input)",
+                        border:`1px solid ${hasConfig ? "rgba(240,165,0,0.3)" : "var(--border)"}`,
+                        borderRadius:8, color: hasConfig ? "var(--accent)" : "var(--text-secondary)",
+                        fontSize:12, fontWeight:600, cursor:"pointer", textAlign:"left", fontFamily:"inherit",
+                        display:"flex", alignItems:"center", justifyContent:"space-between",
+                      }}>
+                        <code>{cmd}</code>
+                        {hasConfig && <Lock size={11} />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             );
           })}
         </div>
