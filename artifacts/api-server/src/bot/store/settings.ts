@@ -54,3 +54,8 @@ export function clearGuildSettings(guildId: string): void {
   cache.set(guildId, {});
   save(guildId);
 }
+
+export async function reloadGuildSettings(guildId: string): Promise<void> {
+  const data = await dbGet<GuildSettings>(STORE, guildId);
+  cache.set(guildId, data ?? {});
+}

@@ -3,6 +3,7 @@ import cors from "cors";
 import pinoHttp from "pino-http";
 import router from "./routes";
 import { logger } from "./lib/logger";
+import { reloadGuildSettings } from "./bot/store/settings";
 
 const app: Express = express();
 
@@ -30,6 +31,16 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.get('/ping', (req, res) => res.send('OK'));
+
+app.post('/internal/reload/:guildId', async (req: any, res: any) => {
+  try {
+    await reloadGuildSettings(req.params.guildId);
+    res.json({ ok: true });
+  } catch {
+    res.status(500).json({ error: "reload failed" });
+  }
+});
+
 app.use("/api", router);
 
 export default app;

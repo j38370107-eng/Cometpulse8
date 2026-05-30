@@ -68,8 +68,7 @@ router.get("/:guildId/overview", ...auth, async (req: any, res: any) => {
 router.get("/:guildId/settings", ...auth, async (req: any, res: any) => {
   const { guildId } = req.params;
   const settings = (await dbGet<any>("settings", guildId)) ?? {};
-  const prefixes = (await dbGet<any>("prefixes", guildId)) ?? { prefix: ">" };
-  res.json({ ...settings, prefix: prefixes.prefix ?? ">" });
+  res.json({ ...settings, prefix: settings.prefix ?? "c!" });
 });
 
 router.put("/:guildId/settings", ...auth, async (req: any, res: any) => {
@@ -77,12 +76,11 @@ router.put("/:guildId/settings", ...auth, async (req: any, res: any) => {
   const { prefix, serverLogChannelId, automodWarnExpiryMs } = req.body;
   const settings = (await dbGet<any>("settings", guildId)) ?? {};
   const updated: any = { ...settings };
+  if (prefix !== undefined) updated.prefix = prefix;
   if ("serverLogChannelId" in req.body) updated.serverLogChannelId = serverLogChannelId;
   if (automodWarnExpiryMs !== undefined) updated.automodWarnExpiryMs = automodWarnExpiryMs;
   await dbSet("settings", guildId, updated);
-  if (prefix !== undefined) {
-    await dbSet("prefixes", guildId, { prefix });
-  }
+  fetch(`http://localhost:3000/internal/reload/${guildId}`).catch(() => {});
   res.json({ ok: true });
 });
 
