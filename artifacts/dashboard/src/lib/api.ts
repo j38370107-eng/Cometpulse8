@@ -43,5 +43,14 @@ export const api = {
     updateWelcomeConfig: (id: string, data: any) =>
       request<any>(`/guilds/${id}/welcome`, { method: "PUT", body: JSON.stringify(data) }),
     inviteLeaderboard: (id: string) => request<any[]>(`/guilds/${id}/invite-leaderboard`),
+    rolePanels: (id: string) => request<any[]>(`/guilds/${id}/role-panels`),
+    createRolePanel: (id: string, data: any) =>
+      request<any>(`/guilds/${id}/role-panels`, { method: "POST", body: JSON.stringify(data) }),
+    updateRolePanel: (id: string, panelId: string, data: any) =>
+      request<any>(`/guilds/${id}/role-panels/${panelId}`, { method: "PUT", body: JSON.stringify(data) }),
+    deleteRolePanel: (id: string, panelId: string) =>
+      request<any>(`/guilds/${id}/role-panels/${panelId}`, { method: "DELETE" }),
+    postRolePanel: (id: string, panelId: string) =>
+      request<any>(`/guilds/${id}/role-panels/${panelId}/post`, { method: "POST" }),
   },
 };

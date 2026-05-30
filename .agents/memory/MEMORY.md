@@ -3,3 +3,4 @@
 - [Ticket open message](ticket-open-message.md) — configurable via dashboard Settings tab; stored as cfg.openMessage in ticketConfig DB key
 - [App config](app-config.md) — cooldown, notifyApplicant, blacklist stored under DB key "appConfig"; separate from application forms
 - [Welcome system](welcome-system.md) — DB key "welcome", lazy per-guild cache; guildMemberAdd extends mute re-apply; guildMemberRemove is new; invite timing delay needed
+- [Role panels](role-panels.md) — DB key "rolePanels", per-guild Record<panelId,RolePanel>; buttons/dropdowns/reactions; post via internal API; timed roles with 1-min expiry loop

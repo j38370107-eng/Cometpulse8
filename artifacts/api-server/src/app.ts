@@ -6,6 +6,9 @@ import { logger } from "./lib/logger";
 import { reloadGuildSettings } from "./bot/store/settings";
 import { endGiveaway, rerollGiveaway, cancelTimer } from "./bot/giveaway/manager";
 import { getGiveaway, saveGiveaway } from "./bot/store/giveaways";
+import { getPanel, savePanel, indexPanel } from "./bot/store/rolePanel";
+import { buildPanelEmbed, buildPanelComponents } from "./bot/rolePanel/builder";
+import type { Client } from "discord.js";
 
 const app: Express = express();
 
@@ -64,6 +67,45 @@ app.get('/internal/giveaway-reroll/:guildId/:id', async (req: any, res: any) => 
     res.json({ winners });
   } catch {
     res.status(500).json({ error: "reroll failed" });
+  }
+});
+
+// ── Role Panel: Post to Discord ───────────────────────────────────────────────
+let _panelClient: Client | null = null;
+export function setPanelClient(client: Client): void { _panelClient = client; }
+
+app.post("/internal/post-role-panel/:guildId/:panelId", async (req: any, res: any) => {
+  if (!_panelClient) return res.status(503).json({ error: "Bot not connected" });
+  const { guildId, panelId } = req.params;
+  try {
+    const panel = getPanel(guildId, panelId);
+    if (!panel) return res.status(404).json({ error: "Panel not found" });
+    if (!panel.roles.length) return res.status(400).json({ error: "No roles added to panel" });
+
+    const guild = _panelClient.guilds.cache.get(guildId);
+    if (!guild) return res.status(404).json({ error: "Guild not in cache" });
+
+    const ch = guild.channels.cache.get(panel.channelId) as import("discord.js").TextChannel | undefined;
+    if (!ch?.isTextBased()) return res.status(404).json({ error: "Channel not found or not text" });
+
+    const embed = buildPanelEmbed(panel);
+    const components = buildPanelComponents(panel);
+    const msg = await (ch as import("discord.js").TextChannel).send({ embeds: [embed], components });
+
+    if (panel.type === "reaction") {
+      for (const role of panel.roles) {
+        if (role.emoji) await msg.react(role.emoji).catch(() => {});
+      }
+    }
+
+    const updated = { ...panel, messageId: msg.id };
+    savePanel(updated);
+    indexPanel(updated);
+
+    res.json({ ok: true, messageId: msg.id });
+  } catch (err: any) {
+    logger.error({ err }, "Failed to post role panel");
+    res.status(500).json({ error: err.message });
   }
 });
 

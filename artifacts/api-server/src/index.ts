@@ -2,6 +2,7 @@ import app from "./app";
 import { logger } from "./lib/logger";
 import { startBot } from "./bot";
 import { setStatsClient } from "./routes/stats";
+import { setPanelClient } from "./app";
 
 const rawPort = process.env["PORT"];
 
@@ -28,6 +29,7 @@ const server = app.listen(port, (err) => {
 startBot()
   .then((client) => {
     if (client) setStatsClient(client);
+    if (client) setPanelClient(client);
 
     function shutdown(signal: string) {
       logger.info({ signal }, "Shutting down gracefully...");

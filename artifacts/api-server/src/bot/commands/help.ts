@@ -33,6 +33,11 @@ const CATEGORIES: { name: string; emoji: string; commands: string[] }[] = [
     emoji: "📨",
     commands: ["invites", "whoinvited", "inviteleaderboard"],
   },
+  {
+    name: "Role Panels",
+    emoji: "🎭",
+    commands: ["rp"],
+  },
 ];
 
 export const helpCommand: Command = {

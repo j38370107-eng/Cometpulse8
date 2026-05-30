@@ -14,6 +14,7 @@ import { registerMessageUpdate } from "./messageUpdate";
 import { registerSnipeEvents } from "./snipeEvents";
 import { registerGiveawayButtons } from "./giveawayButtons";
 import { registerMemberLeave } from "./guildMemberRemove";
+import { registerRolePanelInteractions } from "./rolePanelInteractions";
 
 export function registerEvents(client: Client) {
   registerReadyHandler(client);
@@ -29,6 +30,7 @@ export function registerEvents(client: Client) {
   registerChannelCreate(client);
   registerMemberJoin(client);
   registerMemberLeave(client);
+  registerRolePanelInteractions(client);
   registerSnipeEvents(client);
   registerGiveawayButtons(client);
 }

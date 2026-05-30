@@ -18,6 +18,7 @@ import { gcancelCommand } from "./giveaway/cancel";
 import { gbonusCommand } from "./giveaway/bonus";
 import { invitesCommand, whoinvitedCommand } from "./invites/invites";
 import { inviteLeaderboardCommand } from "./invites/leaderboard";
+import { rpCommand } from "./rolepanel/manage";
 
 export const commands: Command[] = [
   helpCommand,
@@ -40,6 +41,7 @@ export const commands: Command[] = [
   invitesCommand,
   whoinvitedCommand,
   inviteLeaderboardCommand,
+  rpCommand,
 ];
 
 export function loadCommands(client: Client) {

@@ -3,6 +3,8 @@ import { logger } from "../lib/logger";
 import { loadCommands } from "./commands";
 import { registerEvents } from "./events";
 import { initAllStores } from "./store";
+import { rebuildMessageIndex } from "./store/rolePanel";
+import { startTimedRoleExpiry } from "./store/timedRoles";
 
 export async function startBot(): Promise<Client | null> {
   const token = process.env["DISCORD_BOT_TOKEN"];
@@ -12,6 +14,7 @@ export async function startBot(): Promise<Client | null> {
   }
 
   await initAllStores();
+  rebuildMessageIndex();
 
   const client = new Client({
     intents: [
@@ -21,11 +24,14 @@ export async function startBot(): Promise<Client | null> {
       GatewayIntentBits.MessageContent,
       GatewayIntentBits.GuildModeration,
       GatewayIntentBits.GuildVoiceStates,
+      GatewayIntentBits.GuildMessageReactions,
     ],
     partials: [
       Partials.Message,
       Partials.Channel,
       Partials.GuildMember,
+      Partials.Reaction,
+      Partials.User,
     ],
     allowedMentions: { repliedUser: false },
   });
@@ -36,6 +42,8 @@ export async function startBot(): Promise<Client | null> {
 
   await client.login(token);
   logger.info("Discord bot logged in");
+
+  startTimedRoleExpiry(client);
 
   return client;
 }
