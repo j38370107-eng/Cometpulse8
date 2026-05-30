@@ -29,8 +29,22 @@ function GiveawayCard({ g, guildId, onAction }: { g: any; guildId: string; onAct
   const totalEntries = (g.entries ?? []).reduce((s: number, e: any) => s + e.entries, 0);
   const uniqueEntries = (g.entries ?? []).length;
 
+  const handleEnd = async () => {
+    if (!confirm(`End giveaway for "${g.prize}" early and pick winners now?`)) return;
+    setBusy(true);
+    try {
+      const res = await api.guild.endGiveaway(guildId, g.id);
+      const winners = res.winners ?? [];
+      alert(winners.length > 0
+        ? `✅ Giveaway ended! Winner${winners.length !== 1 ? "s" : ""}: ${winners.map((w: string) => `<@${w}>`).join(", ")}`
+        : "✅ Giveaway ended — no valid entries.");
+      onAction();
+    } catch (e: any) { alert(e.message); }
+    finally { setBusy(false); }
+  };
+
   const handleCancel = async () => {
-    if (!confirm(`Cancel giveaway for "${g.prize}"?`)) return;
+    if (!confirm(`Cancel giveaway for "${g.prize}"? No winners will be picked.`)) return;
     setBusy(true);
     try { await api.guild.cancelGiveaway(guildId, g.id); onAction(); }
     catch (e: any) { alert(e.message); }
@@ -106,41 +120,88 @@ function GiveawayCard({ g, guildId, onAction }: { g: any; guildId: string; onAct
       )}
 
       {expanded && (
-        <div style={{ borderTop: "1px solid var(--border)", paddingTop: 10, display: "flex", flexDirection: "column", gap: 6 }}>
-          {g.requirements?.requiredRoles?.length > 0 && (
-            <ReqLine label="Required roles" value={g.requirements.requiredRoles.map((r: string) => `<@&${r}>`).join(", ")} />
+        <div style={{ borderTop: "1px solid var(--border)", paddingTop: 10, display: "flex", flexDirection: "column", gap: 8 }}>
+          {/* Requirements */}
+          {(g.requirements?.requiredRoles?.length > 0 || g.requirements?.blacklistRoles?.length > 0 || g.requirements?.minLevel > 0 || g.requirements?.minDays > 0 || g.bonusRoles?.length > 0 || g.boosterBonus > 0 || g.levelBonuses?.length > 0) && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              {g.requirements?.requiredRoles?.length > 0 && (
+                <ReqLine label="Required roles" value={g.requirements.requiredRoles.map((r: string) => `<@&${r}>`).join(", ")} />
+              )}
+              {g.requirements?.blacklistRoles?.length > 0 && (
+                <ReqLine label="Blacklisted roles" value={g.requirements.blacklistRoles.map((r: string) => `<@&${r}>`).join(", ")} />
+              )}
+              {g.requirements?.minLevel > 0 && (
+                <ReqLine label="Min level" value={String(g.requirements.minLevel)} />
+              )}
+              {g.requirements?.minDays > 0 && (
+                <ReqLine label="Min server age" value={`${g.requirements.minDays} days`} />
+              )}
+              {g.bonusRoles?.length > 0 && (
+                <ReqLine label="Bonus roles" value={g.bonusRoles.map((b: any) => `×${b.entries} <@&${b.roleId}>`).join(", ")} />
+              )}
+              {g.boosterBonus > 0 && (
+                <ReqLine label="Booster bonus" value={`+${g.boosterBonus} entries`} />
+              )}
+              {g.levelBonuses?.length > 0 && (
+                <ReqLine label="Level bonuses" value={g.levelBonuses.map((lb: any) => `Lv${lb.minLevel}+: +${lb.bonusEntries}`).join(", ")} />
+              )}
+            </div>
           )}
-          {g.requirements?.blacklistRoles?.length > 0 && (
-            <ReqLine label="Blacklisted roles" value={g.requirements.blacklistRoles.map((r: string) => `<@&${r}>`).join(", ")} />
+
+          {/* Entries list */}
+          {(g.entries ?? []).length > 0 && (
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 600, color: "var(--text-muted)", marginBottom: 5 }}>
+                ENTRIES ({(g.entries ?? []).length})
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 3, maxHeight: 160, overflowY: "auto", paddingRight: 4 }}>
+                {(g.entries as any[])
+                  .slice()
+                  .sort((a, b) => b.entries - a.entries)
+                  .map((e: any) => (
+                    <div key={e.userId} style={{
+                      display: "flex", alignItems: "center", justifyContent: "space-between",
+                      background: "var(--bg-secondary)", borderRadius: 5, padding: "4px 8px",
+                    }}>
+                      <span style={{ fontSize: 11, color: "var(--text-secondary)", fontFamily: "monospace" }}>{e.userId}</span>
+                      <span style={{
+                        fontSize: 10, fontWeight: 700, color: e.entries > 1 ? "#7c3cfa" : "var(--text-muted)",
+                        background: e.entries > 1 ? "rgba(124,60,250,0.12)" : "transparent",
+                        padding: "1px 6px", borderRadius: 99,
+                      }}>
+                        {e.entries}×
+                      </span>
+                    </div>
+                  ))}
+              </div>
+            </div>
           )}
-          {g.requirements?.minLevel > 0 && (
-            <ReqLine label="Min level" value={String(g.requirements.minLevel)} />
+          {(g.entries ?? []).length === 0 && (
+            <div style={{ fontSize: 11, color: "var(--text-muted)", fontStyle: "italic" }}>No entries yet.</div>
           )}
-          {g.requirements?.minDays > 0 && (
-            <ReqLine label="Min server age" value={`${g.requirements.minDays} days`} />
-          )}
-          {g.bonusRoles?.length > 0 && (
-            <ReqLine label="Bonus roles" value={g.bonusRoles.map((b: any) => `×${b.entries} <@&${b.roleId}>`).join(", ")} />
-          )}
-          {g.boosterBonus > 0 && (
-            <ReqLine label="Booster bonus" value={`+${g.boosterBonus} entries`} />
-          )}
-          {g.levelBonuses?.length > 0 && (
-            <ReqLine label="Level bonuses" value={g.levelBonuses.map((lb: any) => `Lv${lb.minLevel}+: +${lb.bonusEntries}`).join(", ")} />
-          )}
+
           <div style={{ fontSize: 10, color: "var(--text-muted)" }}>ID: {g.id} · Message: {g.messageId}</div>
         </div>
       )}
 
       <div style={{ display: "flex", gap: 8, marginTop: 2 }}>
         {isActive && (
-          <ActionBtn
-            label="Cancel"
-            icon={<XCircle size={12} />}
-            color="#ef4444"
-            onClick={handleCancel}
-            disabled={busy}
-          />
+          <>
+            <ActionBtn
+              label="End Now"
+              icon={<Trophy size={12} />}
+              color="#f59e0b"
+              onClick={handleEnd}
+              disabled={busy}
+            />
+            <ActionBtn
+              label="Cancel"
+              icon={<XCircle size={12} />}
+              color="#ef4444"
+              onClick={handleCancel}
+              disabled={busy}
+            />
+          </>
         )}
         {g.ended && !g.cancelled && (
           <ActionBtn

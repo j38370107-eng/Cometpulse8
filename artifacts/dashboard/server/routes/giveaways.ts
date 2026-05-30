@@ -72,6 +72,21 @@ router.post("/:guildId/giveaways/:id/cancel", ...auth, async (req: any, res: any
   res.json({ ok: true });
 });
 
+// ── End from dashboard ────────────────────────────────────────────────────────
+router.post("/:guildId/giveaways/:id/end", ...auth, async (req: any, res: any) => {
+  const { guildId, id } = req.params;
+  const g = await dbGet<any>("giveaways", `${guildId}:${id}`);
+  if (!g) return res.status(404).json({ error: "Giveaway not found" });
+  if (g.ended || g.cancelled) return res.status(400).json({ error: "Giveaway already ended" });
+  try {
+    const r = await fetch(`http://localhost:3000/internal/giveaway-end/${guildId}/${id}`);
+    const data = await r.json();
+    res.json(data);
+  } catch {
+    res.status(503).json({ error: "Bot is not responding" });
+  }
+});
+
 // ── Reroll from dashboard ─────────────────────────────────────────────────────
 router.post("/:guildId/giveaways/:id/reroll", ...auth, async (req: any, res: any) => {
   const { guildId, id } = req.params;
