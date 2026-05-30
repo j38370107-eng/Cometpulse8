@@ -13,6 +13,7 @@ import { registerMemberJoin } from "./guildMemberAdd";
 import { registerMessageUpdate } from "./messageUpdate";
 import { registerSnipeEvents } from "./snipeEvents";
 import { registerGiveawayButtons } from "./giveawayButtons";
+import { registerMemberLeave } from "./guildMemberRemove";
 
 export function registerEvents(client: Client) {
   registerReadyHandler(client);
@@ -27,6 +28,7 @@ export function registerEvents(client: Client) {
   registerInviteTracking(client);
   registerChannelCreate(client);
   registerMemberJoin(client);
+  registerMemberLeave(client);
   registerSnipeEvents(client);
   registerGiveawayButtons(client);
 }

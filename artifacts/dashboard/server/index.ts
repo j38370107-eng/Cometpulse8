@@ -10,6 +10,7 @@ import guildsRouter from "./routes/guilds.js";
 import statsRouter from "./routes/stats.js";
 import applyRouter from "./routes/apply.js";
 import giveawaysRouter from "./routes/giveaways.js";
+import welcomeRouter from "./routes/welcome.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -40,6 +41,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/guilds", guildsRouter);
 app.use("/api/apply", applyRouter);
 app.use("/api/guilds", giveawaysRouter);
+app.use("/api/guilds", welcomeRouter);
 app.use("/api", statsRouter);
 
 // process.cwd() is always the project root (artifacts/dashboard),

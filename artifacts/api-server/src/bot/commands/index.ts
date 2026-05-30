@@ -16,6 +16,8 @@ import { grerollCommand } from "./giveaway/reroll";
 import { glistCommand } from "./giveaway/list";
 import { gcancelCommand } from "./giveaway/cancel";
 import { gbonusCommand } from "./giveaway/bonus";
+import { invitesCommand, whoinvitedCommand } from "./invites/invites";
+import { inviteLeaderboardCommand } from "./invites/leaderboard";
 
 export const commands: Command[] = [
   helpCommand,
@@ -35,6 +37,9 @@ export const commands: Command[] = [
   glistCommand,
   gcancelCommand,
   gbonusCommand,
+  invitesCommand,
+  whoinvitedCommand,
+  inviteLeaderboardCommand,
 ];
 
 export function loadCommands(client: Client) {

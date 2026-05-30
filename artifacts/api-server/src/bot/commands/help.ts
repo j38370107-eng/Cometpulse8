@@ -28,6 +28,11 @@ const CATEGORIES: { name: string; emoji: string; commands: string[] }[] = [
     emoji: "🎉",
     commands: ["gstart", "gend", "greroll", "glist", "gcancel", "gbonus"],
   },
+  {
+    name: "Invites",
+    emoji: "📨",
+    commands: ["invites", "whoinvited", "inviteleaderboard"],
+  },
 ];
 
 export const helpCommand: Command = {

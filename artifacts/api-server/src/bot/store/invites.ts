@@ -7,6 +7,7 @@ export interface InviteRecord {
   inviterId: string;
   inviterTag: string;
   count: number;
+  fakeCount: number;
   invitedUsers: string[];
 }
 
@@ -41,7 +42,7 @@ export function recordInvite(
   if (!cache.has(guildId)) cache.set(guildId, {});
   const guild = cache.get(guildId)!;
   if (!guild[inviterId]) {
-    guild[inviterId] = { inviterId, inviterTag, count: 0, invitedUsers: [] };
+    guild[inviterId] = { inviterId, inviterTag, count: 0, fakeCount: 0, invitedUsers: [] };
   }
   const record = guild[inviterId]!;
   record.count++;
@@ -49,6 +50,21 @@ export function recordInvite(
   if (!record.invitedUsers.includes(invitedUserId)) {
     record.invitedUsers.push(invitedUserId);
   }
+  save(guildId);
+}
+
+export function getInviterForUser(guildId: string, userId: string): InviteRecord | null {
+  const guild = cache.get(guildId);
+  if (!guild) return null;
+  return Object.values(guild).find((r) => r.invitedUsers.includes(userId)) ?? null;
+}
+
+export function markFakeLeave(guildId: string, userId: string): void {
+  const guild = cache.get(guildId);
+  if (!guild) return;
+  const record = Object.values(guild).find((r) => r.invitedUsers.includes(userId));
+  if (!record) return;
+  record.fakeCount = (record.fakeCount ?? 0) + 1;
   save(guildId);
 }
 

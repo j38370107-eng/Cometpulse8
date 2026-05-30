@@ -39,5 +39,9 @@ export const api = {
       request<any>(`/guilds/${id}/giveaways/${giveawayId}/cancel`, { method: "POST" }),
     rerollGiveaway: (id: string, giveawayId: string) =>
       request<any>(`/guilds/${id}/giveaways/${giveawayId}/reroll`, { method: "POST" }),
+    welcomeConfig: (id: string) => request<any>(`/guilds/${id}/welcome`),
+    updateWelcomeConfig: (id: string, data: any) =>
+      request<any>(`/guilds/${id}/welcome`, { method: "PUT", body: JSON.stringify(data) }),
+    inviteLeaderboard: (id: string) => request<any[]>(`/guilds/${id}/invite-leaderboard`),
   },
 };

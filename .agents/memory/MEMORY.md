@@ -2,3 +2,4 @@
 - [Custom commands store](custom-commands.md) — 50-cap per guild, "warm"/"bam" presets in dashboard; DB key "customCommands", hooked in messageCreate
 - [Ticket open message](ticket-open-message.md) — configurable via dashboard Settings tab; stored as cfg.openMessage in ticketConfig DB key
 - [App config](app-config.md) — cooldown, notifyApplicant, blacklist stored under DB key "appConfig"; separate from application forms
+- [Welcome system](welcome-system.md) — DB key "welcome", lazy per-guild cache; guildMemberAdd extends mute re-apply; guildMemberRemove is new; invite timing delay needed
