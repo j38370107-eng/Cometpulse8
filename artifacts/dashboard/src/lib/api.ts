@@ -102,5 +102,17 @@ export const api = {
       request<any>(`/guilds/${id}/custom-commands/${cmdId}`, { method: "DELETE" }),
     deleteCase: (id: string, caseId: string) =>
       request<any>(`/guilds/${id}/cases/${caseId}`, { method: "DELETE" }),
+    giveaways: (id: string) => request<any[]>(`/guilds/${id}/giveaways`),
+    giveawayConfig: (id: string) => request<any>(`/guilds/${id}/giveaway-config`),
+    updateGiveawayConfig: (id: string, data: any) =>
+      request<any>(`/guilds/${id}/giveaway-config`, { method: "PUT", body: JSON.stringify(data) }),
+    endGiveaway: (id: string, giveawayId: string) =>
+      request<any>(`/guilds/${id}/giveaways/${giveawayId}/end`, { method: "POST" }),
+    cancelGiveaway: (id: string, giveawayId: string) =>
+      request<any>(`/guilds/${id}/giveaways/${giveawayId}/cancel`, { method: "POST" }),
+    rerollGiveaway: (id: string, giveawayId: string) =>
+      request<any>(`/guilds/${id}/giveaways/${giveawayId}/reroll`, { method: "POST" }),
+    giveawayBonusEntry: (id: string, giveawayId: string, userId: string, bonus: number) =>
+      request<any>(`/guilds/${id}/giveaways/${giveawayId}/bonus`, { method: "POST", body: JSON.stringify({ userId, bonus }) }),
   },
 };

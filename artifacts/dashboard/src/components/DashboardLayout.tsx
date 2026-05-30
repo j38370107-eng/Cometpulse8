@@ -6,7 +6,7 @@ import {
   LayoutDashboard, Settings, Zap, Shield, FileText,
   Bot, Ban, Search, LogOut, ChevronLeft, Bell, Lock,
   ClipboardList, Ticket, ShieldAlert, Users, Info,
-  Volume2, VolumeX, SlidersHorizontal, Terminal,
+  Volume2, VolumeX, SlidersHorizontal, Terminal, Gift,
 } from "lucide-react";
 
 const INVITE_URL = "https://discord.com/oauth2/authorize?client_id=1507550967275458660&permissions=6293600228863223&integration_type=0&scope=bot";
@@ -51,6 +51,7 @@ const NAV_SECTIONS = [
       { to: "audit-log", label: "Audit Log", icon: Search },
       { to: "applications", label: "Applications", icon: ClipboardList },
       { to: "tickets", label: "Tickets", icon: Ticket },
+      { to: "giveaways", label: "Giveaways", icon: Gift },
       { to: "settings", label: "Settings", icon: Settings },
     ],
   },

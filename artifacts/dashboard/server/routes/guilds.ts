@@ -604,4 +604,86 @@ router.delete("/:guildId/custom-commands/:cmdId", ...auth, async (req: any, res:
   res.json({ ok: true });
 });
 
+// ── Giveaways ─────────────────────────────────────────────────────────────────
+router.get("/:guildId/giveaways", ...auth, async (req: any, res: any) => {
+  const { guildId } = req.params;
+  const data = (await dbGet<any>("giveaways", guildId)) ?? {};
+  const list = Object.values(data).sort((a: any, b: any) => b.createdAt - a.createdAt);
+  res.json(list);
+});
+
+router.get("/:guildId/giveaway-config", ...auth, async (req: any, res: any) => {
+  const { guildId } = req.params;
+  const cfg = (await dbGet<any>("giveawayConfig", guildId)) ?? {};
+  res.json({ managerRoleId: "", announceChannelId: "", boosterBonusAmount: 1, ...cfg });
+});
+
+router.put("/:guildId/giveaway-config", ...auth, async (req: any, res: any) => {
+  const { guildId } = req.params;
+  const existing = (await dbGet<any>("giveawayConfig", guildId)) ?? {};
+  await dbSet("giveawayConfig", guildId, { ...existing, ...req.body });
+  res.json({ ok: true });
+});
+
+router.post("/:guildId/giveaways/:giveawayId/end", ...auth, async (req: any, res: any) => {
+  const { guildId, giveawayId } = req.params;
+  const data = (await dbGet<any>("giveaways", guildId)) ?? {};
+  if (!data[giveawayId]) return res.status(404).json({ error: "Giveaway not found" });
+  if (data[giveawayId].ended || data[giveawayId].cancelled) {
+    return res.status(400).json({ error: "Giveaway is already over" });
+  }
+  data[giveawayId].ended = true;
+  await dbSet("giveaways", guildId, data);
+  res.json({ ok: true, message: "Giveaway marked ended in DB. The bot will process it on next sync." });
+});
+
+router.post("/:guildId/giveaways/:giveawayId/cancel", ...auth, async (req: any, res: any) => {
+  const { guildId, giveawayId } = req.params;
+  const data = (await dbGet<any>("giveaways", guildId)) ?? {};
+  if (!data[giveawayId]) return res.status(404).json({ error: "Giveaway not found" });
+  if (data[giveawayId].ended || data[giveawayId].cancelled) {
+    return res.status(400).json({ error: "Giveaway is already over" });
+  }
+  data[giveawayId].cancelled = true;
+  await dbSet("giveaways", guildId, data);
+  res.json({ ok: true });
+});
+
+router.post("/:guildId/giveaways/:giveawayId/reroll", ...auth, async (req: any, res: any) => {
+  const { guildId, giveawayId } = req.params;
+  const data = (await dbGet<any>("giveaways", guildId)) ?? {};
+  if (!data[giveawayId]) return res.status(404).json({ error: "Giveaway not found" });
+  if (!data[giveawayId].ended) return res.status(400).json({ error: "Giveaway has not ended yet" });
+  const g = data[giveawayId];
+  const pool: string[] = [];
+  for (const entry of (g.entries ?? [])) {
+    for (let i = 0; i < (entry.totalEntries ?? 1); i++) pool.push(entry.userId);
+  }
+  const winners: string[] = [];
+  const used = new Set<string>();
+  while (winners.length < g.winnerCount && pool.filter((id: string) => !used.has(id)).length > 0) {
+    const eligible = pool.filter((id: string) => !used.has(id));
+    const pick = eligible[Math.floor(Math.random() * eligible.length)];
+    winners.push(pick);
+    used.add(pick);
+  }
+  data[giveawayId].winners = winners;
+  await dbSet("giveaways", guildId, data);
+  res.json({ ok: true, winners });
+});
+
+router.post("/:guildId/giveaways/:giveawayId/bonus", ...auth, async (req: any, res: any) => {
+  const { guildId, giveawayId } = req.params;
+  const { userId, bonus } = req.body;
+  if (!userId || typeof bonus !== "number") return res.status(400).json({ error: "userId and bonus required" });
+  const data = (await dbGet<any>("giveaways", guildId)) ?? {};
+  if (!data[giveawayId]) return res.status(404).json({ error: "Giveaway not found" });
+  const entry = (data[giveawayId].entries ?? []).find((e: any) => e.userId === userId);
+  if (!entry) return res.status(404).json({ error: "User has not entered this giveaway" });
+  entry.bonusEntries = Math.max(0, (entry.bonusEntries ?? 0) + bonus);
+  entry.totalEntries = 1 + entry.bonusEntries;
+  await dbSet("giveaways", guildId, data);
+  res.json({ ok: true });
+});
+
 export default router;

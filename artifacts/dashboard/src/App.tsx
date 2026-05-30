@@ -23,6 +23,7 @@ import AntiRaid from "./pages/dashboard/AntiRaid";
 import PunishmentInfo from "./pages/dashboard/PunishmentInfo";
 import ModerationConfig from "./pages/dashboard/ModerationConfig";
 import CustomCommands from "./pages/dashboard/CustomCommands";
+import Giveaways from "./pages/dashboard/Giveaways";
 
 interface AuthCtx {
   user: any | null;
@@ -162,6 +163,7 @@ export default function App() {
               <Route path="punishment-info" element={<PunishmentInfo />} />
               <Route path="moderation" element={<ModerationConfig />} />
               <Route path="custom-commands" element={<CustomCommands />} />
+              <Route path="giveaways" element={<Giveaways />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

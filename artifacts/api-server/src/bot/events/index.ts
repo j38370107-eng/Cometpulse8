@@ -12,6 +12,8 @@ import { registerChannelCreate } from "./channelCreate";
 import { registerMemberJoin } from "./guildMemberAdd";
 import { registerMessageUpdate } from "./messageUpdate";
 import { registerSnipeEvents } from "./snipeEvents";
+import { registerGiveawayButtons } from "./giveawayButtons";
+import { registerGiveawayCommands } from "./giveawayCommands";
 
 export function registerEvents(client: Client) {
   registerReadyHandler(client);
@@ -27,4 +29,6 @@ export function registerEvents(client: Client) {
   registerChannelCreate(client);
   registerMemberJoin(client);
   registerSnipeEvents(client);
+  registerGiveawayButtons(client);
+  registerGiveawayCommands(client);
 }

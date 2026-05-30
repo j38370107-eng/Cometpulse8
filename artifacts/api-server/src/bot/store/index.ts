@@ -23,6 +23,7 @@ import { initApplicationFormsStore, initAppBlacklistStore } from "./applicationF
 import { initProtectedRolesStore } from "./protectedRoles";
 import { initCustomCommandsStore } from "./customCommands";
 import { initLevelsStore } from "./levels";
+import { initGiveawaysStore } from "./giveaways";
 import { logger } from "../../lib/logger";
 
 export async function initAllStores(): Promise<void> {
@@ -53,6 +54,7 @@ export async function initAllStores(): Promise<void> {
     initProtectedRolesStore(),
     initCustomCommandsStore(),
     initLevelsStore(),
+    initGiveawaysStore(),
   ]);
   logger.info("All stores initialised from PostgreSQL");
 }
