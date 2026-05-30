@@ -1,7 +1,7 @@
 import { Outlet, useParams, NavLink, useNavigate } from "react-router-dom";
 import { useAuth, useMusic } from "../App";
 import { api } from "../lib/api";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   LayoutDashboard, Settings, Zap, LogOut, ChevronLeft,
   Volume2, VolumeX,
@@ -37,12 +37,37 @@ export default function DashboardLayout() {
   const navigate = useNavigate();
   const [guild, setGuild] = useState<any>(null);
   const [botChecked, setBotChecked] = useState(false);
+  const accessCheckRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // Refresh guild list from Discord and verify the user still has access.
+  // Returns true if access is confirmed, false if revoked.
+  const verifyAccess = async (id: string): Promise<boolean> => {
+    try {
+      const guilds = await api.auth.refreshGuilds();
+      const match = guilds.find((g: any) => g.id === id);
+      if (match) {
+        setGuild(match);
+        return true;
+      }
+      // Access revoked — kick to server picker
+      navigate("/servers", { replace: true });
+      return false;
+    } catch {
+      // Network error — don't kick, just keep current state
+      return true;
+    }
+  };
+
+  // On mount / guildId change: refresh permissions and set up periodic re-check
   useEffect(() => {
-    api.auth.guilds().then((guilds) => {
-      const g = guilds.find((g: any) => g.id === guildId);
-      setGuild(g ?? null);
-    }).catch(() => {});
+    if (!guildId) return;
+    verifyAccess(guildId);
+
+    // Re-check every 5 minutes while the user is on the dashboard
+    accessCheckRef.current = setInterval(() => verifyAccess(guildId), 5 * 60 * 1000);
+    return () => {
+      if (accessCheckRef.current) clearInterval(accessCheckRef.current);
+    };
   }, [guildId]);
 
   useEffect(() => {
