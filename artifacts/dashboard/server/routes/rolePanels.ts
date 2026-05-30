@@ -102,4 +102,24 @@ router.post("/:guildId/role-panels/:panelId/post", ...auth, async (req: any, res
   }
 });
 
+// POST attach reactions to an existing message by ID (reaction panels only)
+router.post("/:guildId/role-panels/:panelId/attach", ...auth, async (req: any, res: any) => {
+  const { guildId, panelId } = req.params;
+  const { messageId, channelId } = req.body as { messageId?: string; channelId?: string };
+  if (!messageId) return res.status(400).json({ error: "messageId is required" });
+  try {
+    const botPort = process.env["BOT_PORT"] ?? process.env["PORT"] ?? "3000";
+    const r = await fetch(`http://localhost:${botPort}/internal/attach-role-panel/${guildId}/${panelId}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messageId, channelId }),
+    });
+    const json = await r.json();
+    if (!r.ok) return res.status(r.status).json(json);
+    res.json(json);
+  } catch (err: any) {
+    res.status(503).json({ error: "Bot not reachable: " + err.message });
+  }
+});
+
 export default router;

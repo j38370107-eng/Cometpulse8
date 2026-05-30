@@ -52,5 +52,10 @@ export const api = {
       request<any>(`/guilds/${id}/role-panels/${panelId}`, { method: "DELETE" }),
     postRolePanel: (id: string, panelId: string) =>
       request<any>(`/guilds/${id}/role-panels/${panelId}/post`, { method: "POST" }),
+    attachRolePanel: (id: string, panelId: string, messageId: string, channelId?: string) =>
+      request<any>(`/guilds/${id}/role-panels/${panelId}/attach`, {
+        method: "POST",
+        body: JSON.stringify({ messageId, channelId }),
+      }),
   },
 };

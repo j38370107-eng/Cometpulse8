@@ -106,6 +106,10 @@ export default function RolePanels() {
   const [saving, setSaving] = useState(false);
   const [posting, setPosting] = useState(false);
   const [postMsg, setPostMsg] = useState("");
+  const [attachMsgId, setAttachMsgId] = useState("");
+  const [attachChannelId, setAttachChannelId] = useState("");
+  const [attaching, setAttaching] = useState(false);
+  const [attachMsg, setAttachMsg] = useState("");
   const [editingRole, setEditingRole] = useState<number | null>(null);
   const [roleDraft, setRoleDraft] = useState<PanelRole | null>(null);
 
@@ -195,6 +199,22 @@ export default function RolePanels() {
       if (updated) setDraft({ ...updated, messageId: r.messageId });
     } catch (e: any) { setPostMsg(`❌ Failed: ${e.message}`); }
     setPosting(false);
+  };
+
+  const attachPanel = async () => {
+    if (!draft?.id || !guildId || !attachMsgId.trim()) return;
+    setAttaching(true);
+    setAttachMsg("");
+    try {
+      const channelId = attachChannelId || draft.channelId || undefined;
+      const r = await api.guild.attachRolePanel(guildId, draft.id, attachMsgId.trim(), channelId);
+      setAttachMsg(`✅ Reactions added to message ${r.messageId}!`);
+      setAttachMsgId("");
+      await load();
+      const updated = panels.find((p) => p.id === draft.id);
+      if (updated) setDraft({ ...updated, messageId: r.messageId });
+    } catch (e: any) { setAttachMsg(`❌ Failed: ${e.message}`); }
+    setAttaching(false);
   };
 
   // Role editing
@@ -625,6 +645,73 @@ export default function RolePanels() {
                 <p style={{ fontSize: 11, color: "var(--text-muted)", margin: "8px 0 0" }}>
                   Make sure to save the panel first. The bot must have Manage Roles (and Manage Messages for reactions).
                 </p>
+              </Card>
+            )}
+
+            {/* ── Attach to existing message (reaction panels only) ── */}
+            {draft.id && draft.type === "reaction" && (
+              <Card>
+                <div style={{ marginBottom: 12 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", marginBottom: 4 }}>
+                    😀 Attach Reactions to Existing Message
+                  </div>
+                  <div style={{ fontSize: 11, color: "var(--text-muted)" }}>
+                    Instead of posting a new message, point this panel at a message that already exists in your server. The bot will add the role emojis as reactions and start watching for clicks.
+                  </div>
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  <div>
+                    <FieldLabel>Channel containing the message</FieldLabel>
+                    <select
+                      value={attachChannelId || draft.channelId}
+                      onChange={(e) => setAttachChannelId(e.target.value)}
+                      style={selectSty}
+                    >
+                      <option value="">— Use panel channel above —</option>
+                      {channels.map((c) => <option key={c.id} value={c.id}>#{c.name}</option>)}
+                    </select>
+                  </div>
+
+                  <div>
+                    <FieldLabel>Message ID</FieldLabel>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <input
+                        value={attachMsgId}
+                        onChange={(e) => setAttachMsgId(e.target.value)}
+                        style={{ ...inputSty, flex: 1 }}
+                        placeholder="e.g. 1234567890123456789"
+                      />
+                      <button
+                        onClick={attachPanel}
+                        disabled={attaching || !attachMsgId.trim() || draft.roles.length === 0}
+                        style={{
+                          display: "flex", alignItems: "center", gap: 6,
+                          padding: "8px 14px", borderRadius: 7, fontSize: 12, fontWeight: 700,
+                          background: "#f59e0b", border: "none", color: "#000", whiteSpace: "nowrap",
+                          cursor: attaching || !attachMsgId.trim() || draft.roles.length === 0 ? "not-allowed" : "pointer",
+                          opacity: attaching || !attachMsgId.trim() || draft.roles.length === 0 ? 0.5 : 1,
+                          flexShrink: 0,
+                        }}
+                      >
+                        {attaching ? "Attaching…" : "Attach Reactions"}
+                      </button>
+                    </div>
+                    {draft.roles.length === 0 && (
+                      <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 4 }}>⚠️ Add roles with emojis first.</div>
+                    )}
+                  </div>
+
+                  {attachMsg && (
+                    <div style={{ fontSize: 12, color: attachMsg.startsWith("✅") ? "#10b981" : "#ef4444" }}>
+                      {attachMsg}
+                    </div>
+                  )}
+
+                  <div style={{ fontSize: 11, color: "var(--text-muted)", borderTop: "1px solid var(--border)", paddingTop: 8, marginTop: 2 }}>
+                    <strong>How to get a Message ID:</strong> In Discord, enable Developer Mode (Settings → Advanced → Developer Mode), then right-click the message and choose <em>Copy Message ID</em>.
+                  </div>
+                </div>
               </Card>
             )}
           </div>

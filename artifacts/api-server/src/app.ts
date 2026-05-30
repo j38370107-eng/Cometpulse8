@@ -109,6 +109,51 @@ app.post("/internal/post-role-panel/:guildId/:panelId", async (req: any, res: an
   }
 });
 
+// ── Role Panel: Attach reactions to an existing message by ID ─────────────────
+app.post("/internal/attach-role-panel/:guildId/:panelId", async (req: any, res: any) => {
+  if (!_panelClient) return res.status(503).json({ error: "Bot not connected" });
+  const { guildId, panelId } = req.params;
+  const { messageId, channelId } = req.body as { messageId?: string; channelId?: string };
+
+  if (!messageId) return res.status(400).json({ error: "messageId is required" });
+
+  try {
+    const panel = getPanel(guildId, panelId);
+    if (!panel) return res.status(404).json({ error: "Panel not found" });
+    if (panel.type !== "reaction") return res.status(400).json({ error: "Only reaction panels can be attached to existing messages" });
+    if (!panel.roles.length) return res.status(400).json({ error: "No roles added to panel" });
+
+    const guild = _panelClient.guilds.cache.get(guildId);
+    if (!guild) return res.status(404).json({ error: "Guild not in cache" });
+
+    const targetChannelId = channelId || panel.channelId;
+    if (!targetChannelId) return res.status(400).json({ error: "No channel specified" });
+
+    const ch = guild.channels.cache.get(targetChannelId) as import("discord.js").TextChannel | undefined;
+    if (!ch?.isTextBased()) return res.status(404).json({ error: "Channel not found or not text-based" });
+
+    let msg: import("discord.js").Message;
+    try {
+      msg = await (ch as import("discord.js").TextChannel).messages.fetch(messageId);
+    } catch {
+      return res.status(404).json({ error: "Message not found — make sure the message ID and channel are correct" });
+    }
+
+    for (const role of panel.roles) {
+      if (role.emoji) await msg.react(role.emoji).catch(() => {});
+    }
+
+    const updated = { ...panel, messageId: msg.id, channelId: targetChannelId };
+    savePanel(updated);
+    indexPanel(updated);
+
+    res.json({ ok: true, messageId: msg.id });
+  } catch (err: any) {
+    logger.error({ err }, "Failed to attach role panel reactions");
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.use("/api", router);
 
 export default app;
