@@ -37,8 +37,6 @@ export const api = {
       request<any>(`/guilds/${id}/giveaway-config`, { method: "PUT", body: JSON.stringify(data) }),
     cancelGiveaway: (id: string, giveawayId: string) =>
       request<any>(`/guilds/${id}/giveaways/${giveawayId}/cancel`, { method: "POST" }),
-    endGiveaway: (id: string, giveawayId: string) =>
-      request<any>(`/guilds/${id}/giveaways/${giveawayId}/end`, { method: "POST" }),
     rerollGiveaway: (id: string, giveawayId: string) =>
       request<any>(`/guilds/${id}/giveaways/${giveawayId}/reroll`, { method: "POST" }),
   },

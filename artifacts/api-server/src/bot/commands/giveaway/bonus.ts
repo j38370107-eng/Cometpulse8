@@ -7,7 +7,6 @@ import {
   saveGiveaway,
 } from "../../store/giveaways";
 import { updateGiveawayMessage } from "../../giveaway/manager";
-import { getPrefix } from "../../store/prefixes";
 
 function canRunGiveaway(message: any): boolean {
   if (!message.guild) return false;
@@ -30,8 +29,7 @@ export const gbonusCommand: Command = {
     }
 
     if (args.length < 3) {
-      const prefix = getPrefix(message.guild!.id);
-      return message.reply(`❌ Usage: \`${prefix}gbonus <giveaway-id> <@user> <entries>\``);
+      return message.reply("❌ Usage: `gbonus <giveaway-id> <@user> <entries>`");
     }
 
     const ref = args[0];

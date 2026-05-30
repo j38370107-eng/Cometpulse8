@@ -6,7 +6,6 @@ import {
   getGiveawayConfig,
 } from "../../store/giveaways";
 import { rerollGiveaway } from "../../giveaway/manager";
-import { getPrefix } from "../../store/prefixes";
 
 function canRunGiveaway(message: any): boolean {
   if (!message.guild) return false;
@@ -37,10 +36,7 @@ export const grerollCommand: Command = {
       getGiveaway(guildId, ref);
 
     if (!giveaway) return message.reply("❌ Giveaway not found.");
-    if (!giveaway.ended) {
-      const prefix = getPrefix(message.guild!.id);
-      return message.reply(`❌ That giveaway hasn't ended yet. Use \`${prefix}gend\` first.`);
-    }
+    if (!giveaway.ended) return message.reply("❌ That giveaway hasn't ended yet. Use `gend` first.");
     if (giveaway.cancelled) return message.reply("❌ That giveaway was cancelled.");
     if (giveaway.entries.length === 0) return message.reply("❌ No entries to reroll from.");
 

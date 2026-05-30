@@ -57,17 +57,6 @@ app.post('/internal/giveaway-cancel/:guildId/:id', async (req: any, res: any) =>
   }
 });
 
-app.get('/internal/giveaway-end/:guildId/:id', async (req: any, res: any) => {
-  try {
-    const { guildId, id } = req.params;
-    const result = await endGiveaway(guildId, id);
-    if (!result) return res.status(404).json({ error: "not found or already ended" });
-    res.json({ winners: result.winners });
-  } catch {
-    res.status(500).json({ error: "end failed" });
-  }
-});
-
 app.get('/internal/giveaway-reroll/:guildId/:id', async (req: any, res: any) => {
   try {
     const { guildId, id } = req.params;
