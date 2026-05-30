@@ -15,6 +15,7 @@ export const api = {
   auth: {
     me: () => request<{ id: string; tag: string; avatar?: string }>("/auth/me"),
     guilds: () => request<any[]>("/auth/guilds"),
+    refreshGuilds: () => request<any[]>("/auth/guilds/refresh", { method: "POST" }),
     logout: () => request<{ ok: boolean }>("/auth/logout", { method: "POST" }),
   },
   stats: () => request<any>("/stats"),

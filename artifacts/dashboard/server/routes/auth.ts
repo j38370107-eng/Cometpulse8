@@ -77,6 +77,26 @@ router.get("/guilds", (req: any, res: any) => {
   res.json(req.session.guilds ?? []);
 });
 
+// Re-fetch the user's guild list from Discord and update the session.
+// Call this whenever permissions may have changed without a full re-login.
+router.post("/guilds/refresh", async (req: any, res: any) => {
+  if (!req.session.userId) return res.status(401).json({ error: "Unauthorized" });
+  const accessToken = req.session.accessToken as string | undefined;
+  if (!accessToken) {
+    return res.status(401).json({ error: "Session expired — please log in again" });
+  }
+  try {
+    const guilds = await getMyGuilds(accessToken);
+    req.session.guilds = guilds.filter((g) => hasManageGuild(g.permissions));
+    await new Promise<void>((resolve, reject) =>
+      req.session.save((err: unknown) => (err ? reject(err) : resolve()))
+    );
+    res.json(req.session.guilds);
+  } catch {
+    res.status(500).json({ error: "Failed to refresh guild list from Discord" });
+  }
+});
+
 router.post("/logout", (req: any, res: any) => {
   req.session.destroy(() => {
     res.clearCookie("connect.sid");
