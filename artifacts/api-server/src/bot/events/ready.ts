@@ -4,6 +4,7 @@ import { scheduleAllTimedBans } from "../store/timedBans";
 import { scheduleAllTimedMutes } from "../store/timedMutes";
 import { initGiveawayManager } from "../giveaway/manager";
 import { dbSet, dbGet } from "../store/db";
+import { cacheGuildInvites } from "./inviteTrack";
 
 export function registerReadyHandler(client: Client) {
   client.once("ready", async (c) => {
@@ -12,6 +13,12 @@ export function registerReadyHandler(client: Client) {
     scheduleAllTimedBans(client);
     scheduleAllTimedMutes(client);
     initGiveawayManager(client);
+
+    // Cache invites for all guilds so tracking works immediately after startup
+    for (const guild of c.guilds.cache.values()) {
+      await cacheGuildInvites(guild);
+    }
+    logger.info({ guildCount: c.guilds.cache.size }, "Invite cache populated for all guilds");
 
     // Persist a server-start anchor once so uptime survives restarts
     const existing = await dbGet<{ startMs: number }>( "_meta", "serverStart").catch(() => null);

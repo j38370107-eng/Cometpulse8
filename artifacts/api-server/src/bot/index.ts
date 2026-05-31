@@ -25,6 +25,7 @@ export async function startBot(): Promise<Client | null> {
       GatewayIntentBits.GuildModeration,
       GatewayIntentBits.GuildVoiceStates,
       GatewayIntentBits.GuildMessageReactions,
+      GatewayIntentBits.GuildInvites,
     ],
     partials: [
       Partials.Message,
