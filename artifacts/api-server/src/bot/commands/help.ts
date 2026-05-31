@@ -58,26 +58,6 @@ const CATEGORIES: { name: string; emoji: string; commands: string[] }[] = [
       "deletesuggestion",
     ],
   },
-  {
-    name: "Music",
-    emoji: "🎵",
-    commands: [
-      "play",
-      "skip",
-      "stop",
-      "pause",
-      "resume",
-      "queue",
-      "nowplaying",
-      "volume",
-      "loop",
-      "shuffle",
-      "remove",
-      "clearqueue",
-      "search",
-      "musicconfig",
-    ],
-  },
 ];
 
 export const helpCommand: Command = {

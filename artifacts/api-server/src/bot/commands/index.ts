@@ -25,12 +25,6 @@ import {
   approveCommand, denyCommand, implementCommand, duplicateCommand, deleteSuggestionCommand,
   suggestionsConfigCommand, viewSuggestionCommand, suggestionsLeaderboardCommand,
 } from "./suggestions/reviewSuggestion";
-import {
-  playCommand, skipCommand, stopCommand, pauseCommand, resumeCommand,
-  queueCommand, nowPlayingCommand, volumeCommand, loopCommand, shuffleCommand,
-  removeCommand, clearQueueCommand, searchCommand, musicConfigCommand,
-} from "./music/music";
-
 export const commands: Command[] = [
   helpCommand,
   changePrefixCommand,
@@ -63,20 +57,6 @@ export const commands: Command[] = [
   implementCommand,
   duplicateCommand,
   deleteSuggestionCommand,
-  playCommand,
-  skipCommand,
-  stopCommand,
-  pauseCommand,
-  resumeCommand,
-  queueCommand,
-  nowPlayingCommand,
-  volumeCommand,
-  loopCommand,
-  shuffleCommand,
-  removeCommand,
-  clearQueueCommand,
-  searchCommand,
-  musicConfigCommand,
 ];
 
 export function loadCommands(client: Client) {

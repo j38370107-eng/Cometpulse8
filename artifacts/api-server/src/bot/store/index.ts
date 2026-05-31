@@ -28,7 +28,6 @@ import { initRolePanelStore } from "./rolePanel";
 import { initRankCardConfigStore } from "./rankCardConfig";
 import { initStarboardStore } from "./starboard";
 import { initSuggestionsStore } from "./suggestions";
-import { initMusicConfigStore } from "./musicConfig";
 import { logger } from "../../lib/logger";
 
 export async function initAllStores(): Promise<void> {
@@ -64,7 +63,6 @@ export async function initAllStores(): Promise<void> {
     initRankCardConfigStore(),
     initStarboardStore(),
     initSuggestionsStore(),
-    initMusicConfigStore(),
   ]);
   logger.info("All stores initialised from PostgreSQL");
 }

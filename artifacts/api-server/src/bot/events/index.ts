@@ -17,8 +17,6 @@ import { registerMemberLeave } from "./guildMemberRemove";
 import { registerRolePanelInteractions } from "./rolePanelInteractions";
 import { registerStarboardEvents } from "./starboardEvents";
 import { registerSuggestionVotes } from "./suggestionVotes";
-import { registerMusicButtons } from "./musicButtons";
-
 export function registerEvents(client: Client) {
   registerReadyHandler(client);
   registerMessageHandler(client);
@@ -38,5 +36,4 @@ export function registerEvents(client: Client) {
   registerGiveawayButtons(client);
   registerStarboardEvents(client);
   registerSuggestionVotes(client);
-  registerMusicButtons(client);
 }
