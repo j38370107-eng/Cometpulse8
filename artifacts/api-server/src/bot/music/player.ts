@@ -144,7 +144,15 @@ export async function joinAndPlay(
       channelId: vc.id,
       guildId,
       adapterCreator: member.guild.voiceAdapterCreator,
+      selfDeaf: true,
     });
+
+    try {
+      await entersState(conn, VoiceConnectionStatus.Ready, 20_000);
+    } catch {
+      conn.destroy();
+      throw new Error("Failed to join voice channel. Make sure I have permission to connect and speak.");
+    }
 
     const player = createAudioPlayer({ behaviors: { noSubscriber: NoSubscriberBehavior.Pause } });
     conn.subscribe(player);

@@ -38,6 +38,46 @@ const CATEGORIES: { name: string; emoji: string; commands: string[] }[] = [
     emoji: "🎭",
     commands: ["rp"],
   },
+  {
+    name: "Starboard",
+    emoji: "⭐",
+    commands: ["starboard"],
+  },
+  {
+    name: "Suggestions",
+    emoji: "💡",
+    commands: [
+      "suggest",
+      "suggestionsconfig",
+      "viewsuggestion",
+      "suggestionsleaderboard",
+      "approve",
+      "deny",
+      "implement",
+      "duplicate",
+      "deletesuggestion",
+    ],
+  },
+  {
+    name: "Music",
+    emoji: "🎵",
+    commands: [
+      "play",
+      "skip",
+      "stop",
+      "pause",
+      "resume",
+      "queue",
+      "nowplaying",
+      "volume",
+      "loop",
+      "shuffle",
+      "remove",
+      "clearqueue",
+      "search",
+      "musicconfig",
+    ],
+  },
 ];
 
 export const helpCommand: Command = {
