@@ -5,6 +5,7 @@ import { logger } from "../../lib/logger";
 const LAVALINK_HOST = process.env.LAVALINK_HOST ?? "localhost";
 const LAVALINK_PORT = parseInt(process.env.LAVALINK_PORT ?? "2333", 10);
 const LAVALINK_PASSWORD = process.env.LAVALINK_PASSWORD ?? "youshallnotpass";
+const LAVALINK_SECURE = process.env.LAVALINK_SECURE === "true";
 
 let _manager: LavalinkManager | null = null;
 
@@ -20,6 +21,7 @@ export async function initLavalink(client: Client): Promise<void> {
         authorization: LAVALINK_PASSWORD,
         host: LAVALINK_HOST,
         port: LAVALINK_PORT,
+        secure: LAVALINK_SECURE,
         id: "main",
         retryAmount: 10,
         retryDelay: 5_000,
