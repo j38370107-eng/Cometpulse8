@@ -30,6 +30,10 @@ Replaced @discordjs/voice + yt-dlp with full Lavalink setup. All previous stream
 - YouTube source plugin enabled; built-in youtube: false
 - YouTube clients: WEB_REMIX, WEB, TVHTML5_SIMPLY_EMBEDDED_PLAYER (ANDROID_TESTSUITE failed to resolve)
 
+### Render LAVALINK_HOST env var
+- Use the **full URL with https://** e.g. `https://lavalink-4-ru0c.onrender.com` — lavalink-client accepts and handles it correctly
+- Without `https://` (bare hostname) caused connection failures in production on Render
+
 ### If plugin version breaks (YouTube changes):
 Update `artifacts/lavalink/application.yml` plugin version and restart the Lavalink Server workflow.
 
