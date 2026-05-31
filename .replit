@@ -24,10 +24,6 @@ args = "Dylan Deadly Nights Bot"
 task = "workflow.run"
 args = "Dashboard Dev"
 
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "Lavalink Server"
-
 [[workflows.workflow]]
 name = "Dylan Deadly Nights Bot"
 author = "agent"
@@ -52,17 +48,6 @@ task = "shell.exec"
 args = "cd artifacts/dashboard && pnpm run dev"
 waitForPort = 5000
 
-[[workflows.workflow]]
-name = "Lavalink Server"
-author = "agent"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "cd artifacts/lavalink && java -jar Lavalink.jar"
-
-[workflows.workflow.metadata]
-outputType = "console"
-
 [agent]
 stack = "BEST_EFFORT_FALLBACK"
 expertMode = true
@@ -70,10 +55,6 @@ expertMode = true
 [postMerge]
 path = "scripts/post-merge.sh"
 timeoutMs = 20000
-
-[[ports]]
-localPort = 2333
-externalPort = 3002
 
 [[ports]]
 localPort = 3000

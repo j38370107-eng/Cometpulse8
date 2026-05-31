@@ -5,18 +5,10 @@ import { scheduleAllTimedMutes } from "../store/timedMutes";
 import { initGiveawayManager } from "../giveaway/manager";
 import { dbSet, dbGet } from "../store/db";
 import { cacheGuildInvites } from "./inviteTrack";
-import { initLavalink } from "../music/player";
 
 export function registerReadyHandler(client: Client) {
   client.once("ready", async (c) => {
     logger.info(`Bot ready: logged in as ${c.user.tag}`);
-
-    try {
-      await initLavalink(client);
-      logger.info("Lavalink manager initialized");
-    } catch (err) {
-      logger.warn({ err }, "Lavalink init failed — music commands will be unavailable until Lavalink connects");
-    }
     c.user.setActivity("the server", { type: ActivityType.Watching });
     scheduleAllTimedBans(client);
     scheduleAllTimedMutes(client);

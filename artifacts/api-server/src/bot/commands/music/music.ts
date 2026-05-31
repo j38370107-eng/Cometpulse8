@@ -1,8 +1,11 @@
-import { Message, EmbedBuilder, PermissionFlagsBits, GuildMember } from "discord.js";
+import { Message, EmbedBuilder, PermissionFlagsBits, GuildMember, TextChannel } from "discord.js";
 import type { Command } from "../types";
-import type { Player } from "lavalink-client";
-import { getLavalink, formatDuration, buildNowPlayingEmbed, buildPlayerButtons } from "../../music/player";
-import { getMusicConfig, setMusicConfig } from "../../store/musicConfig";
+import {
+  getQueue, joinAndPlay, searchTrack, searchMultiple, loadPlaylist,
+  destroyQueue, buildNowPlayingEmbed, buildPlayerButtons, formatDuration,
+  Track, playNext,
+} from "../../music/player";
+import { getMusicConfig } from "../../store/musicConfig";
 
 async function isDj(message: Message): Promise<boolean> {
   if (!message.guild) return false;
@@ -21,32 +24,12 @@ async function requireVoice(message: Message): Promise<GuildMember | null> {
   return member;
 }
 
-async function getOrCreatePlayer(member: GuildMember, message: Message): Promise<Player> {
-  const guildId = message.guild!.id;
-  const vc = member.voice.channel!;
-  const cfg = await getMusicConfig(guildId);
-  const lavalink = getLavalink();
-
-  let player = lavalink.getPlayer(guildId);
-  if (!player) {
-    player = await lavalink.createPlayer({
-      guildId,
-      voiceChannelId: vc.id,
-      textChannelId: message.channelId,
-      selfDeaf: true,
-      volume: cfg.defaultVolume,
-    });
-  }
-  if (!player.connected) await player.connect();
-  return player;
-}
-
 export const playCommand: Command = {
   name: "play",
   aliases: ["p"],
-  description: "Play a song or add it to the queue",
+  description: "Play a song or add to queue",
   usage: "play <song name or URL>",
-  async execute(message, args) {
+  async execute(message: Message, args: string[]) {
     if (!message.guild) return;
     const member = await requireVoice(message);
     if (!member) return;
@@ -60,48 +43,48 @@ export const playCommand: Command = {
     }
 
     const msg = await message.reply("🔍 Searching...");
+
     try {
-      const player = await getOrCreatePlayer(member, message);
-      const res = await player.search({ query }, message.author);
-
-      if (res.loadType === "empty" || res.loadType === "error") {
-        if (!player.queue.current && player.queue.tracks.length === 0) await player.destroy();
-        return msg.edit("❌ No results found.");
+      if (query.includes("list=") || (query.startsWith("http") && query.includes("playlist"))) {
+        const tracks = await loadPlaylist(query);
+        if (!tracks.length) return msg.edit("❌ Could not load playlist.");
+        for (const t of tracks) t.requesterId = message.author.id;
+        const q = getQueue(message.guild.id);
+        if (!q) {
+          const first = tracks.shift()!;
+          await joinAndPlay(member, first, message, message.client);
+          for (const t of tracks) {
+            const currentQ = getQueue(message.guild.id);
+            if (currentQ) currentQ.tracks.push(t);
+          }
+        } else {
+          for (const t of tracks) q.tracks.push(t);
+        }
+        return msg.edit(`✅ Added **${tracks.length + 1}** songs from playlist to queue.`);
       }
 
-      const wasActive = player.playing || player.paused || !!player.queue.current;
+      const track = await searchTrack(query);
+      if (!track) return msg.edit("❌ No results found.");
+      track.requesterId = message.author.id;
 
-      if (res.loadType === "playlist") {
-        await player.queue.add(res.tracks);
-        if (!player.playing && !player.paused) await player.play();
-        const embed = new EmbedBuilder()
-          .setColor(0x5865F2)
-          .setTitle("➕ Playlist Added")
-          .setDescription(`**${res.playlist?.name ?? "Playlist"}**`)
-          .addFields({ name: "Tracks", value: `${res.tracks.length} songs added`, inline: true });
-        return msg.edit({ content: "", embeds: [embed] });
-      }
+      const { queued, position } = await joinAndPlay(member, track, message, message.client);
 
-      const track = res.tracks[0];
-      await player.queue.add(track);
-      if (!player.playing && !player.paused) await player.play();
-
-      if (wasActive) {
+      if (queued) {
         const embed = new EmbedBuilder()
           .setColor(0x5865F2)
           .setTitle("➕ Added to Queue")
-          .setDescription(`**[${track.info.title}](${track.info.uri})**`)
-          .setThumbnail(track.info.artworkUrl || null)
+          .setDescription(`**[${track.title}](${track.url})**`)
+          .setThumbnail(track.thumbnail || null)
           .addFields(
-            { name: "Duration", value: formatDuration(track.info.duration), inline: true },
-            { name: "Position", value: `#${player.queue.tracks.length}`, inline: true },
+            { name: "Duration", value: formatDuration(track.duration), inline: true },
+            { name: "Position", value: `#${position}`, inline: true },
           );
         return msg.edit({ content: "", embeds: [embed] });
       }
 
-      return msg.edit({ content: "", embeds: [buildNowPlayingEmbed(track, player)] });
+      return msg.edit({ content: "", embeds: [buildNowPlayingEmbed(track, getQueue(message.guild.id)!)] });
     } catch (err: any) {
-      return msg.edit(`❌ ${err.message ?? "Playback error. Make sure the Lavalink server is running."}`);
+      return msg.edit(`❌ ${err.message ?? "Playback error."}`);
     }
   },
 };
@@ -111,35 +94,33 @@ export const skipCommand: Command = {
   aliases: ["s"],
   description: "Skip the current song",
   usage: "skip",
-  async execute(message) {
+  async execute(message: Message, args: string[]) {
     if (!message.guild) return;
-    const player = getLavalink().getPlayer(message.guild.id);
-    if (!player?.queue.current) return message.reply("❌ Nothing is playing.");
+    const q = getQueue(message.guild.id);
+    if (!q?.current) return message.reply("❌ Nothing is playing.");
     if (!await isDj(message)) {
       const vc = (message.member as GuildMember).voice.channel;
       if (!vc) return message.reply("❌ You must be in a voice channel.");
       const members = vc.members.filter(m => !m.user.bot).size;
       const needed = Math.ceil(members * ((await getMusicConfig(message.guild.id)).voteskipPercent / 100));
-      return message.reply(`🗳️ Vote skip needs ${needed} votes.`);
+      return message.reply(`🗳️ Vote skip needs ${needed} votes. (Use \`voteskip\` if non-DJ)`);
     }
-    const title = player.queue.current.info.title;
-    await player.skip();
-    return message.reply(`⏭️ Skipped **${title}**.`);
+    q.player.stop();
+    return message.reply(`⏭️ Skipped **${q.current.title}**.`);
   },
 };
 
 export const stopCommand: Command = {
   name: "stop",
   aliases: ["disconnect", "dc"],
-  description: "Stop music and disconnect",
+  description: "Stop music and clear queue",
   usage: "stop",
-  async execute(message) {
+  async execute(message: Message, args: string[]) {
     if (!message.guild) return;
     if (!await isDj(message)) return message.reply("❌ DJ role required.");
-    const player = getLavalink().getPlayer(message.guild.id);
-    if (!player) return message.reply("❌ Nothing is playing.");
-    await player.destroy();
-    return message.reply("⏹️ Stopped music and disconnected.");
+    if (!getQueue(message.guild.id)) return message.reply("❌ Nothing is playing.");
+    destroyQueue(message.guild.id);
+    return message.reply("⏹️ Stopped music and cleared queue.");
   },
 };
 
@@ -148,11 +129,11 @@ export const pauseCommand: Command = {
   aliases: [],
   description: "Pause the current song",
   usage: "pause",
-  async execute(message) {
+  async execute(message: Message, args: string[]) {
     if (!message.guild) return;
-    const player = getLavalink().getPlayer(message.guild.id);
-    if (!player?.queue.current) return message.reply("❌ Nothing is playing.");
-    await player.pause();
+    const q = getQueue(message.guild.id);
+    if (!q?.current) return message.reply("❌ Nothing is playing.");
+    q.player.pause();
     return message.reply("⏸️ Paused.");
   },
 };
@@ -162,11 +143,11 @@ export const resumeCommand: Command = {
   aliases: ["unpause"],
   description: "Resume the paused song",
   usage: "resume",
-  async execute(message) {
+  async execute(message: Message, args: string[]) {
     if (!message.guild) return;
-    const player = getLavalink().getPlayer(message.guild.id);
-    if (!player) return message.reply("❌ Nothing is paused.");
-    await player.resume();
+    const q = getQueue(message.guild.id);
+    if (!q) return message.reply("❌ Nothing is paused.");
+    q.player.unpause();
     return message.reply("▶️ Resumed.");
   },
 };
@@ -176,40 +157,36 @@ export const queueCommand: Command = {
   aliases: ["q"],
   description: "View the current queue",
   usage: "queue [page]",
-  async execute(message, args) {
+  async execute(message: Message, args: string[]) {
     if (!message.guild) return;
-    const player = getLavalink().getPlayer(message.guild.id);
-    if (!player || (!player.queue.current && player.queue.tracks.length === 0)) {
-      return message.reply("📭 Queue is empty.");
-    }
+    const q = getQueue(message.guild.id);
+    if (!q || (!q.current && q.tracks.length === 0)) return message.reply("📭 Queue is empty.");
 
     const page = Math.max(1, parseInt(args[0], 10) || 1);
     const perPage = 10;
     const start = (page - 1) * perPage;
-    const total = player.queue.tracks.length;
+    const total = q.tracks.length;
     const totalPages = Math.max(1, Math.ceil(total / perPage));
 
-    const embed = new EmbedBuilder().setTitle("📜 Queue").setColor(0x5865F2);
+    const embed = new EmbedBuilder()
+      .setTitle("📜 Queue")
+      .setColor(0x5865F2);
 
-    if (player.queue.current) {
-      embed.addFields({
-        name: "🎵 Now Playing",
-        value: `[${player.queue.current.info.title}](${player.queue.current.info.uri}) — ${formatDuration(player.queue.current.info.duration)}`,
-      });
+    if (q.current) {
+      embed.addFields({ name: "🎵 Now Playing", value: `[${q.current.title}](${q.current.url}) — ${formatDuration(q.current.duration)}` });
     }
 
-    const slice = player.queue.tracks.slice(start, start + perPage);
+    const slice = q.tracks.slice(start, start + perPage);
     if (slice.length > 0) {
       embed.addFields({
         name: `Up Next (${total} total)`,
-        value: slice.map((t, i) => {
-          const req = (t.requester as any);
-          return `**${start + i + 1}.** [${t.info.title}](${t.info.uri}) — ${formatDuration(t.info.duration)}${req ? ` — <@${req.id}>` : ""}`;
-        }).join("\n"),
+        value: slice.map((t, i) =>
+          `**${start + i + 1}.** [${t.title}](${t.url}) — ${formatDuration(t.duration)} — <@${t.requesterId}>`
+        ).join("\n"),
       });
     }
 
-    embed.setFooter({ text: `Page ${page}/${totalPages} • Loop: ${player.repeatMode} • Volume: ${player.volume}%` });
+    embed.setFooter({ text: `Page ${page}/${totalPages} • Loop: ${q.loop} • Volume: ${q.volume}%` });
     return message.reply({ embeds: [embed] });
   },
 };
@@ -219,14 +196,11 @@ export const nowPlayingCommand: Command = {
   aliases: ["np"],
   description: "Show what's currently playing",
   usage: "nowplaying",
-  async execute(message) {
+  async execute(message: Message, args: string[]) {
     if (!message.guild) return;
-    const player = getLavalink().getPlayer(message.guild.id);
-    if (!player?.queue.current) return message.reply("❌ Nothing is playing.");
-    return message.reply({
-      embeds: [buildNowPlayingEmbed(player.queue.current, player)],
-      components: [buildPlayerButtons(player)],
-    });
+    const q = getQueue(message.guild.id);
+    if (!q?.current) return message.reply("❌ Nothing is playing.");
+    return message.reply({ embeds: [buildNowPlayingEmbed(q.current, q)], components: [buildPlayerButtons(q)] });
   },
 };
 
@@ -235,14 +209,14 @@ export const volumeCommand: Command = {
   aliases: ["vol"],
   description: "Set the volume (0-100)",
   usage: "volume <0-100>",
-  async execute(message, args) {
+  async execute(message: Message, args: string[]) {
     if (!message.guild) return;
     if (!await isDj(message)) return message.reply("❌ DJ role required.");
-    const player = getLavalink().getPlayer(message.guild.id);
-    if (!player) return message.reply("❌ Nothing is playing.");
+    const q = getQueue(message.guild.id);
+    if (!q) return message.reply("❌ Nothing is playing.");
     const vol = parseInt(args[0], 10);
     if (isNaN(vol) || vol < 0 || vol > 100) return message.reply("❌ Volume must be 0–100.");
-    await player.setVolume(vol);
+    q.volume = vol;
     return message.reply(`🔊 Volume set to **${vol}%**.`);
   },
 };
@@ -250,21 +224,21 @@ export const volumeCommand: Command = {
 export const loopCommand: Command = {
   name: "loop",
   aliases: ["repeat"],
-  description: "Toggle loop mode (off/track/queue)",
+  description: "Toggle loop mode (none/track/queue)",
   usage: "loop [track|queue|off]",
-  async execute(message, args) {
+  async execute(message: Message, args: string[]) {
     if (!message.guild) return;
-    const player = getLavalink().getPlayer(message.guild.id);
-    if (!player) return message.reply("❌ Nothing is playing.");
+    const q = getQueue(message.guild.id);
+    if (!q) return message.reply("❌ Nothing is playing.");
     const mode = args[0]?.toLowerCase();
-    let next: "off" | "track" | "queue";
-    if (mode === "track") next = "track";
-    else if (mode === "queue") next = "queue";
-    else if (mode === "off" || mode === "none") next = "off";
-    else next = player.repeatMode === "off" ? "track" : player.repeatMode === "track" ? "queue" : "off";
-    await player.setRepeatMode(next);
-    const icons = { off: "❌ Off", track: "🔂 Track", queue: "🔁 Queue" };
-    return message.reply(`Loop: **${icons[next]}**`);
+    if (mode === "track") q.loop = "track";
+    else if (mode === "queue") q.loop = "queue";
+    else if (mode === "off" || mode === "none") q.loop = "none";
+    else {
+      q.loop = q.loop === "none" ? "track" : q.loop === "track" ? "queue" : "none";
+    }
+    const icons = { none: "❌ Off", track: "🔂 Track", queue: "🔁 Queue" };
+    return message.reply(`Loop: **${icons[q.loop]}**`);
   },
 };
 
@@ -273,12 +247,15 @@ export const shuffleCommand: Command = {
   aliases: [],
   description: "Shuffle the queue",
   usage: "shuffle",
-  async execute(message) {
+  async execute(message: Message, args: string[]) {
     if (!message.guild) return;
-    const player = getLavalink().getPlayer(message.guild.id);
-    if (!player || player.queue.tracks.length < 2) return message.reply("❌ Not enough songs to shuffle.");
-    await player.queue.shuffle();
-    return message.reply(`🔀 Shuffled ${player.queue.tracks.length} songs.`);
+    const q = getQueue(message.guild.id);
+    if (!q || q.tracks.length < 2) return message.reply("❌ Not enough songs to shuffle.");
+    for (let i = q.tracks.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [q.tracks[i], q.tracks[j]] = [q.tracks[j], q.tracks[i]];
+    }
+    return message.reply(`🔀 Shuffled ${q.tracks.length} songs.`);
   },
 };
 
@@ -287,15 +264,14 @@ export const removeCommand: Command = {
   aliases: ["rm"],
   description: "Remove a song from the queue",
   usage: "remove <position>",
-  async execute(message, args) {
+  async execute(message: Message, args: string[]) {
     if (!message.guild) return;
-    const player = getLavalink().getPlayer(message.guild.id);
-    if (!player || player.queue.tracks.length === 0) return message.reply("❌ Queue is empty.");
+    const q = getQueue(message.guild.id);
+    if (!q || q.tracks.length === 0) return message.reply("❌ Queue is empty.");
     const pos = parseInt(args[0], 10);
-    if (isNaN(pos) || pos < 1 || pos > player.queue.tracks.length) return message.reply("❌ Invalid position.");
-    const removed = player.queue.tracks[pos - 1];
-    await player.queue.remove(pos - 1);
-    return message.reply(`🗑️ Removed **${removed.info.title}**.`);
+    if (isNaN(pos) || pos < 1 || pos > q.tracks.length) return message.reply("❌ Invalid position.");
+    const removed = q.tracks.splice(pos - 1, 1)[0];
+    return message.reply(`🗑️ Removed **${removed.title}**.`);
   },
 };
 
@@ -304,12 +280,12 @@ export const clearQueueCommand: Command = {
   aliases: ["cq"],
   description: "Clear the song queue",
   usage: "clearqueue",
-  async execute(message) {
+  async execute(message: Message, args: string[]) {
     if (!message.guild) return;
     if (!await isDj(message)) return message.reply("❌ DJ role required.");
-    const player = getLavalink().getPlayer(message.guild.id);
-    if (!player) return message.reply("❌ Nothing is playing.");
-    await player.queue.splice(0, player.queue.tracks.length);
+    const q = getQueue(message.guild.id);
+    if (!q) return message.reply("❌ Nothing is playing.");
+    q.tracks = [];
     return message.reply("🗑️ Queue cleared.");
   },
 };
@@ -319,24 +295,23 @@ export const searchCommand: Command = {
   aliases: [],
   description: "Search for songs and pick one",
   usage: "search <query>",
-  async execute(message, args) {
+  async execute(message: Message, args: string[]) {
     if (!message.guild) return;
-    const member = message.member as GuildMember;
+    const member = (message.member as GuildMember);
     if (!member.voice.channel) return message.reply("❌ Join a voice channel first.");
 
     const query = args.join(" ").trim();
     if (!query) return message.reply("❌ Provide a search query.");
 
-    const player = await getOrCreatePlayer(member, message);
-    const res = await player.search({ query }, message.author);
-
-    if (!res.tracks.length) return message.reply("❌ No results found.");
-    const results = res.tracks.slice(0, 5);
+    const results = await searchMultiple(query, 5);
+    if (!results.length) return message.reply("❌ No results found.");
 
     const embed = new EmbedBuilder()
       .setTitle("🔍 Search Results")
       .setColor(0x5865F2)
-      .setDescription(results.map((r, i) => `**${i + 1}.** [${r.info.title}](${r.info.uri}) — ${formatDuration(r.info.duration)}`).join("\n"))
+      .setDescription(
+        results.map((r, i) => `**${i + 1}.** [${r.title}](${r.url}) — ${formatDuration(r.duration)}`).join("\n")
+      )
       .setFooter({ text: "Reply with a number (1-5) to pick, or cancel" });
 
     const msg = await message.reply({ embeds: [embed] });
@@ -352,13 +327,12 @@ export const searchCommand: Command = {
     const track = results[pick];
     if (!track) return msg.edit({ content: "❌ Invalid selection.", embeds: [] });
 
-    const wasActive = player.playing || player.paused || !!player.queue.current;
-    await player.queue.add(track);
-    if (!player.playing && !player.paused) await player.play();
+    track.requesterId = message.author.id;
+    const { queued, position } = await joinAndPlay(member, track, message, message.client);
 
     return msg.edit({
-      content: wasActive ? `✅ Added **${track.info.title}** to queue at position #${player.queue.tracks.length}.` : "",
-      embeds: wasActive ? [] : [buildNowPlayingEmbed(track, player)],
+      content: queued ? `✅ Added **${track.title}** to queue at position #${position}.` : "",
+      embeds: queued ? [] : [buildNowPlayingEmbed(track, getQueue(message.guild.id)!)],
     });
   },
 };
@@ -368,13 +342,14 @@ export const musicConfigCommand: Command = {
   aliases: ["mc"],
   description: "Configure the music system",
   usage: "musicconfig <djrole|channel|volume|queue|disconnect|voteskip|announce> [value]",
-  async execute(message, args) {
+  async execute(message: Message, args: string[]) {
     if (!message.guild) return;
     if (!message.member?.permissions.has(PermissionFlagsBits.ManageGuild)) {
       return message.reply("❌ Manage Server required.");
     }
 
     const cfg = await getMusicConfig(message.guild.id);
+    const { setMusicConfig } = await import("../../store/musicConfig");
     const sub = args[0]?.toLowerCase();
 
     if (!sub) {

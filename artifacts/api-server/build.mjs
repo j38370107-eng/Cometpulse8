@@ -31,7 +31,6 @@ async function buildAll() {
       "*.node",
       "@napi-rs/canvas",
       "@napi-rs/*",
-      "lavalink-client",
       "@discordjs/voice",
       "@discordjs/opus",
       "@snazzah/*",
