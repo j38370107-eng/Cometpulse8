@@ -270,17 +270,6 @@ export async function generateRankCard(opts: RankCardOptions): Promise<Buffer> {
   ctx.font = "bold 24px Arial";
   ctx.fillText(username, textX, 118);
 
-  // "Bot" tag
-  const nameWidth = ctx.measureText(username).width;
-  const tagX = textX + nameWidth + 10;
-  roundedRect(ctx, tagX, 100, 46, 22, 5);
-  ctx.fillStyle = "rgba(100, 40, 200, 0.65)";
-  ctx.fill();
-  ctx.fillStyle = "#c4a0ff";
-  ctx.font = "bold 11px Arial";
-  ctx.textBaseline = "middle";
-  ctx.fillText("• Bot", tagX + 7, 111);
-
   ctx.textBaseline = "alphabetic";
   ctx.fillStyle = "rgba(160, 130, 210, 0.8)";
   ctx.font = "14px Arial";
