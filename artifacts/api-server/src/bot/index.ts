@@ -5,6 +5,7 @@ import { registerEvents } from "./events";
 import { initAllStores } from "./store";
 import { rebuildMessageIndex } from "./store/rolePanel";
 import { startTimedRoleExpiry } from "./store/timedRoles";
+import { startEmbedScheduler } from "./store/embedBuilder";
 
 export async function startBot(): Promise<Client | null> {
   const token = process.env["DISCORD_BOT_TOKEN"];
@@ -45,6 +46,7 @@ export async function startBot(): Promise<Client | null> {
   logger.info("Discord bot logged in");
 
   startTimedRoleExpiry(client);
+  startEmbedScheduler(client);
 
   return client;
 }

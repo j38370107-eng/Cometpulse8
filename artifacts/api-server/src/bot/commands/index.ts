@@ -25,6 +25,8 @@ import {
   approveCommand, denyCommand, implementCommand, duplicateCommand, deleteSuggestionCommand,
   suggestionsConfigCommand, viewSuggestionCommand, suggestionsLeaderboardCommand,
 } from "./suggestions/reviewSuggestion";
+import { embedCommand } from "./embed/embed";
+
 export const commands: Command[] = [
   helpCommand,
   changePrefixCommand,
@@ -57,6 +59,7 @@ export const commands: Command[] = [
   implementCommand,
   duplicateCommand,
   deleteSuggestionCommand,
+  embedCommand,
 ];
 
 export function loadCommands(client: Client) {

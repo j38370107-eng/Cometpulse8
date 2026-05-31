@@ -58,6 +58,11 @@ const CATEGORIES: { name: string; emoji: string; commands: string[] }[] = [
       "deletesuggestion",
     ],
   },
+  {
+    name: "Embed Builder",
+    emoji: "🛠️",
+    commands: ["embed"],
+  },
 ];
 
 export const helpCommand: Command = {
