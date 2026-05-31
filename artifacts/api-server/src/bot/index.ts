@@ -5,6 +5,7 @@ import { registerEvents } from "./events";
 import { initAllStores } from "./store";
 import { rebuildMessageIndex } from "./store/rolePanel";
 import { startTimedRoleExpiry } from "./store/timedRoles";
+import { getLavalink } from "./music/lavalinkManager";
 
 export async function startBot(): Promise<Client | null> {
   const token = process.env["DISCORD_BOT_TOKEN"];
@@ -40,6 +41,14 @@ export async function startBot(): Promise<Client | null> {
   (client as any).commands = new Collection();
   loadCommands(client);
   registerEvents(client);
+
+  client.on("raw", (d) => {
+    try {
+      getLavalink().sendRawData(d);
+    } catch {
+      // Lavalink not yet initialized — ignore
+    }
+  });
 
   await client.login(token);
   logger.info("Discord bot logged in");

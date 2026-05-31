@@ -10,23 +10,28 @@ description: How the music system is wired — packages, build externals, stream
 - `ffmpeg-static` — ffmpeg binary
 - `@distube/ytdl-core` — installed but also broken by YouTube API changes (can't parse decipher function)
 
-## Streaming: yt-dlp binary (the working solution)
-YouTube streaming via play-dl and ytdl-core both fail with "Invalid URL" / missing formats due to YouTube's current anti-bot measures. The fix is `yt-dlp`:
+## Music system: Lavalink 4.x (current solution)
+Replaced @discordjs/voice + yt-dlp with full Lavalink setup. All previous streaming approaches (play-dl, @distube/ytdl-core, yt-dlp subprocess) were either broken or unreliable.
 
-- Binary lives at `artifacts/api-server/bin/yt-dlp` (downloaded from GitHub releases, v2026.03.17)
-- `spawnYtDlpStream(url)` in `player.ts` spawns it with `-f bestaudio[ext=webm]/bestaudio/best -o -`
-- Output is piped as `StreamType.WebmOpus` into `createAudioResource`
-- play-dl is still used for `search()` and `video_info()` (metadata only) — those still work fine
+### Architecture
+- **Lavalink Server**: `artifacts/lavalink/Lavalink.jar` (v4.2.2), runs as "Lavalink Server" workflow on port 2333
+- **YouTube plugin**: `dev.lavalink.youtube:youtube-plugin:1.18.1` — downloaded by Lavalink on first start into `artifacts/lavalink/plugins/`
+- **Node client**: `lavalink-client` v2.10.x in `artifacts/api-server`
+- **Manager**: `artifacts/api-server/src/bot/music/lavalinkManager.ts` — singleton, initialized in ready event
+- **Player helpers**: `artifacts/api-server/src/bot/music/player.ts` — re-exports getLavalink + embed/button builders
+- **Raw events**: `bot/index.ts` passes `client.on("raw", d => getLavalink().sendRawData(d))` for voice state updates
 
-**Why:** YouTube now requires signed/encrypted stream URLs that play-dl 1.9.7 and @distube/ytdl-core cannot handle. yt-dlp is actively maintained and handles YouTube's current format.
+### Java
+- Java 21 installed via `installSystemDependencies({ packages: ["jdk"] })` — OpenJDK 21.0.7
+- Required for Lavalink 4.x (needs Java 17+)
 
-**How to apply:** If streaming breaks again, update the yt-dlp binary: `curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o artifacts/api-server/bin/yt-dlp && chmod +x artifacts/api-server/bin/yt-dlp`
+### Lavalink config: `artifacts/lavalink/application.yml`
+- Password: `youshallnotpass` (override with `LAVALINK_PASSWORD` env var)
+- YouTube source plugin enabled; built-in youtube: false
+- YouTube clients: WEB_REMIX, WEB, TVHTML5_SIMPLY_EMBEDDED_PLAYER (ANDROID_TESTSUITE failed to resolve)
 
-## Voice connection fix
-`joinAndPlay` now calls `await entersState(conn, VoiceConnectionStatus.Ready, 20_000)` before subscribing the player. Without this, the bot joins but playback silently fails.
-
-## Why @discordjs/opus is NOT used
-Native build fails on Replit's Nix sandbox. `opusscript` is the automatic fallback. Do NOT add `@discordjs/opus` to `onlyBuiltDependencies`.
+### If plugin version breaks (YouTube changes):
+Update `artifacts/lavalink/application.yml` plugin version and restart the Lavalink Server workflow.
 
 ## build.mjs externals required
-`@discordjs/voice`, `@discordjs/opus`, `@snazzah/*`, `play-dl`, `play-opus`, `play-audio`, `opusscript`, `mediaplex`, `sodium-native`, `libsodium-wrappers`, `ffmpeg-static`
+`lavalink-client`, `@discordjs/voice`, `@discordjs/opus`, `@snazzah/*`, `play-dl`, `opusscript`, `mediaplex`, `sodium-native`, `libsodium-wrappers`, `ffmpeg-static`
