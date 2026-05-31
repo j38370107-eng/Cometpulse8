@@ -15,10 +15,11 @@ const YT_DLP_BIN = path.resolve(process.cwd(), "bin", "yt-dlp");
 
 function spawnYtDlpStream(url: string): NodeJS.ReadableStream {
   const proc = spawn(YT_DLP_BIN, [
-    "-f", "bestaudio[ext=webm]/bestaudio/best",
+    "-f", "bestaudio/best",
     "--no-playlist",
     "-o", "-",
     "--quiet",
+    "--no-check-certificates",
     url,
   ]);
   proc.stderr.on("data", (d: Buffer) => {
@@ -108,7 +109,7 @@ async function playNext(guildId: string, client: any): Promise<void> {
     const rawStream = spawnYtDlpStream(track.url);
 
     const resource = createAudioResource(rawStream, {
-      inputType: StreamType.WebmOpus,
+      inputType: StreamType.Arbitrary,
       inlineVolume: false,
     });
     q.player.play(resource);
