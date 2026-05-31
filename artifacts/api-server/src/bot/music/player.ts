@@ -2,12 +2,32 @@ import {
   joinVoiceChannel, createAudioPlayer, createAudioResource,
   AudioPlayerStatus, VoiceConnectionStatus, entersState,
   getVoiceConnection, AudioPlayer, VoiceConnection,
-  NoSubscriberBehavior,
+  NoSubscriberBehavior, StreamType,
 } from "@discordjs/voice";
 import { GuildMember, Message, TextChannel, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, VoiceChannel, StageChannel } from "discord.js";
 import playdl from "play-dl";
+import { spawn } from "child_process";
+import path from "path";
 import { getMusicConfig } from "../store/musicConfig";
 import { logger } from "../../lib/logger";
+
+const YT_DLP_BIN = path.resolve(process.cwd(), "bin", "yt-dlp");
+
+function spawnYtDlpStream(url: string): NodeJS.ReadableStream {
+  const proc = spawn(YT_DLP_BIN, [
+    "-f", "bestaudio[ext=webm]/bestaudio/best",
+    "--no-playlist",
+    "-o", "-",
+    "--quiet",
+    url,
+  ]);
+  proc.stderr.on("data", (d: Buffer) => {
+    const msg = d.toString().trim();
+    if (msg) logger.warn({ msg }, "yt-dlp stderr");
+  });
+  proc.on("error", (err) => logger.warn({ err }, "yt-dlp spawn error"));
+  return proc.stdout;
+}
 
 export interface Track {
   title: string;
@@ -85,23 +105,12 @@ async function playNext(guildId: string, client: any): Promise<void> {
   q.playing = true;
 
   try {
-    let stream;
+    const rawStream = spawnYtDlpStream(track.url);
 
-    if (track.source === "youtube" || track.url.includes("youtube") || track.url.includes("youtu.be")) {
-      const info = await playdl.stream(track.url, { quality: 2 });
-      stream = info.stream;
-    } else if (track.source === "soundcloud") {
-      const info = await playdl.stream(track.url);
-      stream = info.stream;
-    } else {
-      const info = await playdl.stream(track.url, { quality: 2 });
-      stream = info.stream;
-    }
-
-    const resource = createAudioResource(stream, {
-      inlineVolume: true,
+    const resource = createAudioResource(rawStream, {
+      inputType: StreamType.WebmOpus,
+      inlineVolume: false,
     });
-    resource.volume?.setVolume(q.volume / 100);
     q.player.play(resource);
     clearDisconnectTimer(guildId);
 

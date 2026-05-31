@@ -1,32 +1,32 @@
 ---
 name: Music and voice dependencies
-description: How the music system is wired — packages, build externals, and opus fallback strategy
+description: How the music system is wired — packages, build externals, streaming via yt-dlp
 ---
 
 ## Packages installed (api-server)
 - `@discordjs/voice` — voice connection handling
-- `play-dl` — YouTube/SoundCloud audio streaming (pure-JS, no binary needed)
-- `opusscript` — pure-JS opus encoder, used as automatic fallback when native @discordjs/opus is absent
-- `ffmpeg-static` — ffmpeg binary (build script runs via onlyBuiltDependencies in pnpm-workspace.yaml)
+- `play-dl` — YouTube search & metadata ONLY (streaming is broken as of 2026 due to YouTube API changes)
+- `opusscript` — pure-JS opus encoder, automatic fallback when native @discordjs/opus is absent
+- `ffmpeg-static` — ffmpeg binary
+- `@distube/ytdl-core` — installed but also broken by YouTube API changes (can't parse decipher function)
+
+## Streaming: yt-dlp binary (the working solution)
+YouTube streaming via play-dl and ytdl-core both fail with "Invalid URL" / missing formats due to YouTube's current anti-bot measures. The fix is `yt-dlp`:
+
+- Binary lives at `artifacts/api-server/bin/yt-dlp` (downloaded from GitHub releases, v2026.03.17)
+- `spawnYtDlpStream(url)` in `player.ts` spawns it with `-f bestaudio[ext=webm]/bestaudio/best -o -`
+- Output is piped as `StreamType.WebmOpus` into `createAudioResource`
+- play-dl is still used for `search()` and `video_info()` (metadata only) — those still work fine
+
+**Why:** YouTube now requires signed/encrypted stream URLs that play-dl 1.9.7 and @distube/ytdl-core cannot handle. yt-dlp is actively maintained and handles YouTube's current format.
+
+**How to apply:** If streaming breaks again, update the yt-dlp binary: `curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o artifacts/api-server/bin/yt-dlp && chmod +x artifacts/api-server/bin/yt-dlp`
+
+## Voice connection fix
+`joinAndPlay` now calls `await entersState(conn, VoiceConnectionStatus.Ready, 20_000)` before subscribing the player. Without this, the bot joins but playback silently fails.
 
 ## Why @discordjs/opus is NOT used
-Native build (`node-pre-gyp`) fails on Replit's Nix sandbox for this package. `opusscript` is the automatic fallback inside `@discordjs/voice` and works without native binaries. Do NOT add `@discordjs/opus` to `onlyBuiltDependencies` — it will break `pnpm install`.
+Native build fails on Replit's Nix sandbox. `opusscript` is the automatic fallback. Do NOT add `@discordjs/opus` to `onlyBuiltDependencies`.
 
 ## build.mjs externals required
-These must be in the `external` array or esbuild fails:
-- `@discordjs/voice`
-- `@discordjs/opus`
-- `@snazzah/*` (native .node binding — dep of @discordjs/voice)
-- `play-dl`
-- `play-opus`
-- `play-audio`
-- `opusscript`
-- `mediaplex`
-- `sodium-native`
-- `libsodium-wrappers`
-- `ffmpeg-static`
-
-**Why:** esbuild cannot bundle native `.node` files or packages that dynamically require opus codecs. Marking them external lets Node.js resolve them at runtime from node_modules instead.
-
-## How to apply
-Any time a new voice/audio package is added, check if it has native bindings or dynamic requires — add it to the `external` list in `artifacts/api-server/build.mjs` before building.
+`@discordjs/voice`, `@discordjs/opus`, `@snazzah/*`, `play-dl`, `play-opus`, `play-audio`, `opusscript`, `mediaplex`, `sodium-native`, `libsodium-wrappers`, `ffmpeg-static`
