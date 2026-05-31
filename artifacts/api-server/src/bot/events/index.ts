@@ -15,6 +15,9 @@ import { registerSnipeEvents } from "./snipeEvents";
 import { registerGiveawayButtons } from "./giveawayButtons";
 import { registerMemberLeave } from "./guildMemberRemove";
 import { registerRolePanelInteractions } from "./rolePanelInteractions";
+import { registerStarboardEvents } from "./starboardEvents";
+import { registerSuggestionVotes } from "./suggestionVotes";
+import { registerMusicButtons } from "./musicButtons";
 
 export function registerEvents(client: Client) {
   registerReadyHandler(client);
@@ -33,4 +36,7 @@ export function registerEvents(client: Client) {
   registerRolePanelInteractions(client);
   registerSnipeEvents(client);
   registerGiveawayButtons(client);
+  registerStarboardEvents(client);
+  registerSuggestionVotes(client);
+  registerMusicButtons(client);
 }

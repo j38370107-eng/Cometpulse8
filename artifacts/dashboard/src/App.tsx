@@ -12,6 +12,9 @@ import Levels from "./pages/dashboard/Levels";
 import Giveaways from "./pages/dashboard/Giveaways";
 import Welcome from "./pages/dashboard/Welcome";
 import RolePanels from "./pages/dashboard/RolePanels";
+import Starboard from "./pages/dashboard/Starboard";
+import Suggestions from "./pages/dashboard/Suggestions";
+import MusicPage from "./pages/dashboard/Music";
 
 interface AuthCtx {
   user: any | null;
@@ -132,6 +135,9 @@ export default function App() {
               <Route path="giveaways" element={<Giveaways />} />
               <Route path="welcome" element={<Welcome />} />
               <Route path="role-panels" element={<RolePanels />} />
+              <Route path="starboard" element={<Starboard />} />
+              <Route path="suggestions" element={<Suggestions />} />
+              <Route path="music" element={<MusicPage />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

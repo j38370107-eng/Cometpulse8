@@ -672,4 +672,82 @@ router.delete("/:guildId/custom-commands/:cmdId", ...auth, async (req: any, res:
   res.json({ ok: true });
 });
 
+// ── Starboard ──────────────────────────────────────────────────────────────────
+router.get("/:guildId/starboard", ...auth, async (req: any, res: any) => {
+  const { guildId } = req.params;
+  const data = (await dbGet<any>("starboardConfig", guildId)) ?? {
+    enabled: false, channelId: "", emoji: "⭐", threshold: 3, selfStar: false,
+    ignoreBots: true, ignoreNsfw: false, ignoredChannels: [], ignoredRoles: [],
+    locked: false, maxAgeDays: 30, nsfwChannelId: "",
+  };
+  res.json(data);
+});
+
+router.put("/:guildId/starboard", ...auth, async (req: any, res: any) => {
+  const { guildId } = req.params;
+  const existing = (await dbGet<any>("starboardConfig", guildId)) ?? {};
+  const updated = { ...existing, ...req.body };
+  await dbSet("starboardConfig", guildId, updated);
+  await fetch(`http://localhost:3000/internal/reload`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ store: "starboardConfig", guildId }),
+  }).catch(() => {});
+  res.json(updated);
+});
+
+// ── Suggestions ────────────────────────────────────────────────────────────────
+router.get("/:guildId/suggestions/config", ...auth, async (req: any, res: any) => {
+  const { guildId } = req.params;
+  const data = (await dbGet<any>("suggestionConfig", guildId)) ?? {
+    enabled: false, channelId: "", staffRole: "", cooldownMs: 3600000,
+    maxPerUser: 3, locked: false, dmNotify: true, threadCreation: true,
+    anonymousEnabled: false, requiredRole: "", blacklistedUsers: [],
+  };
+  res.json(data);
+});
+
+router.put("/:guildId/suggestions/config", ...auth, async (req: any, res: any) => {
+  const { guildId } = req.params;
+  const existing = (await dbGet<any>("suggestionConfig", guildId)) ?? {};
+  const updated = { ...existing, ...req.body };
+  await dbSet("suggestionConfig", guildId, updated);
+  await fetch(`http://localhost:3000/internal/reload`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ store: "suggestionConfig", guildId }),
+  }).catch(() => {});
+  res.json(updated);
+});
+
+router.get("/:guildId/suggestions", ...auth, async (req: any, res: any) => {
+  const { guildId } = req.params;
+  const data = (await dbGet<any[]>("suggestions", guildId)) ?? [];
+  res.json(data);
+});
+
+// ── Music Config ───────────────────────────────────────────────────────────────
+router.get("/:guildId/music-config", ...auth, async (req: any, res: any) => {
+  const { guildId } = req.params;
+  const data = (await dbGet<any>("musicConfig", guildId)) ?? {
+    djRole: "", musicChannel: "", defaultVolume: 50, maxQueueSize: 100,
+    autoDisconnectMs: 300000, announceNowPlaying: true, voteskipPercent: 50,
+    allowedSources: ["youtube", "spotify", "soundcloud"],
+  };
+  res.json(data);
+});
+
+router.put("/:guildId/music-config", ...auth, async (req: any, res: any) => {
+  const { guildId } = req.params;
+  const existing = (await dbGet<any>("musicConfig", guildId)) ?? {};
+  const updated = { ...existing, ...req.body };
+  await dbSet("musicConfig", guildId, updated);
+  await fetch(`http://localhost:3000/internal/reload`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ store: "musicConfig", guildId }),
+  }).catch(() => {});
+  res.json(updated);
+});
+
 export default router;

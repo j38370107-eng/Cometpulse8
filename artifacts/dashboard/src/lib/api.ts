@@ -60,5 +60,15 @@ export const api = {
         method: "POST",
         body: JSON.stringify({ messageId, channelId }),
       }),
+    starboardConfig: (id: string) => request<any>(`/guilds/${id}/starboard`),
+    updateStarboardConfig: (id: string, data: any) =>
+      request<any>(`/guilds/${id}/starboard`, { method: "PUT", body: JSON.stringify(data) }),
+    suggestionConfig: (id: string) => request<any>(`/guilds/${id}/suggestions/config`),
+    updateSuggestionConfig: (id: string, data: any) =>
+      request<any>(`/guilds/${id}/suggestions/config`, { method: "PUT", body: JSON.stringify(data) }),
+    suggestions: (id: string) => request<any[]>(`/guilds/${id}/suggestions`),
+    musicConfig: (id: string) => request<any>(`/guilds/${id}/music-config`),
+    updateMusicConfig: (id: string, data: any) =>
+      request<any>(`/guilds/${id}/music-config`, { method: "PUT", body: JSON.stringify(data) }),
   },
 };

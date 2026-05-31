@@ -19,6 +19,17 @@ import { gbonusCommand } from "./giveaway/bonus";
 import { invitesCommand, whoinvitedCommand } from "./invites/invites";
 import { inviteLeaderboardCommand } from "./invites/leaderboard";
 import { rpCommand } from "./rolepanel/manage";
+import { starboardCommand } from "./starboard/starboard";
+import { suggestCommand } from "./suggestions/suggest";
+import {
+  approveCommand, denyCommand, implementCommand, duplicateCommand, deleteSuggestionCommand,
+  suggestionsConfigCommand, viewSuggestionCommand, suggestionsLeaderboardCommand,
+} from "./suggestions/reviewSuggestion";
+import {
+  playCommand, skipCommand, stopCommand, pauseCommand, resumeCommand,
+  queueCommand, nowPlayingCommand, volumeCommand, loopCommand, shuffleCommand,
+  removeCommand, clearQueueCommand, searchCommand, musicConfigCommand,
+} from "./music/music";
 
 export const commands: Command[] = [
   helpCommand,
@@ -42,6 +53,30 @@ export const commands: Command[] = [
   whoinvitedCommand,
   inviteLeaderboardCommand,
   rpCommand,
+  starboardCommand,
+  suggestCommand,
+  suggestionsConfigCommand,
+  viewSuggestionCommand,
+  suggestionsLeaderboardCommand,
+  approveCommand,
+  denyCommand,
+  implementCommand,
+  duplicateCommand,
+  deleteSuggestionCommand,
+  playCommand,
+  skipCommand,
+  stopCommand,
+  pauseCommand,
+  resumeCommand,
+  queueCommand,
+  nowPlayingCommand,
+  volumeCommand,
+  loopCommand,
+  shuffleCommand,
+  removeCommand,
+  clearQueueCommand,
+  searchCommand,
+  musicConfigCommand,
 ];
 
 export function loadCommands(client: Client) {

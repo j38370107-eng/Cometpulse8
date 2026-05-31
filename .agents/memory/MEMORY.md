@@ -4,3 +4,4 @@
 - [App config](app-config.md) — cooldown, notifyApplicant, blacklist stored under DB key "appConfig"; separate from application forms
 - [Welcome system](welcome-system.md) — DB key "welcome", lazy per-guild cache; guildMemberAdd extends mute re-apply; guildMemberRemove is new; invite timing delay needed
 - [Role panels](role-panels.md) — DB key "rolePanels", per-guild Record<panelId,RolePanel>; buttons/dropdowns/reactions; post via internal API; timed roles with 1-min expiry loop
+- [Music + voice deps](music-voice-deps.md) — @discordjs/voice + play-dl + opusscript (pure-JS); @discordjs/opus native build fails on Replit; mark voice/play-dl/opusscript/ffmpeg-static as external in build.mjs
