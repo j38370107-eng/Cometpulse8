@@ -4,7 +4,7 @@ import { api } from "../lib/api";
 import { useState, useEffect, useRef } from "react";
 import {
   LayoutDashboard, Settings, Zap, LogOut, ChevronLeft,
-  Volume2, VolumeX, Gift, UserPlus, Layers, Star, Lightbulb, Music,
+  Volume2, VolumeX, Gift, UserPlus, Layers, Star, Lightbulb, Music, PenSquare,
 } from "lucide-react";
 
 const INVITE_URL = "https://discord.com/oauth2/authorize?client_id=1507550967275458660&permissions=6293600228863223&integration_type=0&scope=bot";
@@ -26,6 +26,7 @@ const NAV_SECTIONS = [
       { to: "starboard", label: "Starboard", icon: Star },
       { to: "suggestions", label: "Suggestions", icon: Lightbulb },
       { to: "music", label: "Music", icon: Music },
+      { to: "embed-builder", label: "Embed Builder", icon: PenSquare },
     ],
   },
   {

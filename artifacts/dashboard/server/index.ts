@@ -12,6 +12,7 @@ import applyRouter from "./routes/apply.js";
 import giveawaysRouter from "./routes/giveaways.js";
 import welcomeRouter from "./routes/welcome.js";
 import rolePanelsRouter from "./routes/rolePanels.js";
+import embedBuilderRouter from "./routes/embedBuilder.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -44,6 +45,7 @@ app.use("/api/apply", applyRouter);
 app.use("/api/guilds", giveawaysRouter);
 app.use("/api/guilds", welcomeRouter);
 app.use("/api/guilds", rolePanelsRouter);
+app.use("/api/guilds", embedBuilderRouter);
 app.use("/api", statsRouter);
 
 // process.cwd() is always the project root (artifacts/dashboard),

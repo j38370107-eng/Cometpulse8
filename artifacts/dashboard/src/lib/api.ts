@@ -70,5 +70,14 @@ export const api = {
     musicConfig: (id: string) => request<any>(`/guilds/${id}/music-config`),
     updateMusicConfig: (id: string, data: any) =>
       request<any>(`/guilds/${id}/music-config`, { method: "PUT", body: JSON.stringify(data) }),
+    embedSettings: (id: string) => request<any>(`/guilds/${id}/embed-settings`),
+    updateEmbedSettings: (id: string, data: any) =>
+      request<any>(`/guilds/${id}/embed-settings`, { method: "PUT", body: JSON.stringify(data) }),
+    embedTemplates: (id: string) => request<any[]>(`/guilds/${id}/embed-templates`),
+    deleteEmbedTemplate: (id: string, name: string) =>
+      request<any>(`/guilds/${id}/embed-templates/${encodeURIComponent(name)}`, { method: "DELETE" }),
+    embedScheduled: (id: string) => request<any[]>(`/guilds/${id}/embed-scheduled`),
+    cancelEmbedScheduled: (id: string, schedId: string) =>
+      request<any>(`/guilds/${id}/embed-scheduled/${encodeURIComponent(schedId)}`, { method: "DELETE" }),
   },
 };
