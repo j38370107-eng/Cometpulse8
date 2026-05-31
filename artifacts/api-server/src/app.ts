@@ -4,6 +4,8 @@ import pinoHttp from "pino-http";
 import router from "./routes";
 import { logger } from "./lib/logger";
 import { reloadGuildSettings } from "./bot/store/settings";
+import { dbGet, dbSet } from "./bot/store/db";
+import { setRankCardConfig } from "./bot/store/rankCardConfig";
 import { endGiveaway, rerollGiveaway, cancelTimer } from "./bot/giveaway/manager";
 import { getGiveaway, saveGiveaway } from "./bot/store/giveaways";
 import { getPanel, savePanel, indexPanel } from "./bot/store/rolePanel";
@@ -40,6 +42,17 @@ app.get('/ping', (req, res) => res.send('OK'));
 app.post('/internal/reload/:guildId', async (req: any, res: any) => {
   try {
     await reloadGuildSettings(req.params.guildId);
+    res.json({ ok: true });
+  } catch {
+    res.status(500).json({ error: "reload failed" });
+  }
+});
+
+app.post('/internal/reload-rank-card/:guildId', async (req: any, res: any) => {
+  try {
+    const { guildId } = req.params;
+    const cfg = await dbGet<any>("rankCardConfig", guildId);
+    if (cfg) setRankCardConfig(guildId, cfg);
     res.json({ ok: true });
   } catch {
     res.status(500).json({ error: "reload failed" });

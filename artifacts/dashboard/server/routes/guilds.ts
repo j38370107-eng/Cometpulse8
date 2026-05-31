@@ -448,6 +448,33 @@ router.put("/:guildId/antiraid", ...auth, async (req: any, res: any) => {
   res.json({ ok: true });
 });
 
+// ── Rank Card Config ──────────────────────────────────────────────────────────
+router.get("/:guildId/rank-card-config", ...auth, async (req: any, res: any) => {
+  const { guildId } = req.params;
+  const cfg = (await dbGet<any>("rankCardConfig", guildId)) ?? {};
+  res.json({
+    bgColor1: "#0b0120",
+    bgColor2: "#18064a",
+    accentColor: "#7c3cfa",
+    bgImageUrl: "",
+    ...cfg,
+  });
+});
+
+router.put("/:guildId/rank-card-config", ...auth, async (req: any, res: any) => {
+  const { guildId } = req.params;
+  const { bgColor1, bgColor2, accentColor, bgImageUrl } = req.body;
+  const existing = (await dbGet<any>("rankCardConfig", guildId)) ?? {};
+  const updated = { ...existing };
+  if (bgColor1 !== undefined) updated.bgColor1 = bgColor1;
+  if (bgColor2 !== undefined) updated.bgColor2 = bgColor2;
+  if (accentColor !== undefined) updated.accentColor = accentColor;
+  if (bgImageUrl !== undefined) updated.bgImageUrl = bgImageUrl;
+  await dbSet("rankCardConfig", guildId, updated);
+  fetch(`http://localhost:3000/internal/reload-rank-card/${guildId}`).catch(() => {});
+  res.json({ ok: true });
+});
+
 // ── Ticket Categories (Discord category channels) ─────────────────────────────
 router.get("/:guildId/ticket-categories", ...auth, async (req: any, res: any) => {
   const { guildId } = req.params;

@@ -8,6 +8,7 @@ import {
   xpInCurrentLevel,
 } from "../../store/levels";
 import { generateRankCard } from "../../lib/rankCard";
+import { getRankCardConfig } from "../../store/rankCardConfig";
 
 export const rankCommand: Command = {
   name: "rank",
@@ -46,6 +47,8 @@ export const rankCommand: Command = {
       const displayName =
         message.guild.members.cache.get(target.id)?.displayName ?? target.username;
 
+      const cardConfig = getRankCardConfig(message.guild.id);
+
       const buf = await generateRankCard({
         username: displayName,
         handle,
@@ -55,6 +58,10 @@ export const rankCommand: Command = {
         levelXpNeeded,
         totalXp: userData.xp,
         rank,
+        bgColor1: cardConfig.bgColor1,
+        bgColor2: cardConfig.bgColor2,
+        accentColor: cardConfig.accentColor,
+        bgImageUrl: cardConfig.bgImageUrl || undefined,
       });
 
       const attachment = new AttachmentBuilder(buf, { name: "rank.png" });

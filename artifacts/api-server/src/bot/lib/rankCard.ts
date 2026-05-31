@@ -140,6 +140,10 @@ export interface RankCardOptions {
   rank: number;
   xpGained?: number;
   botName?: string;
+  bgColor1?: string;
+  bgColor2?: string;
+  accentColor?: string;
+  bgImageUrl?: string;
 }
 
 export async function generateRankCard(opts: RankCardOptions): Promise<Buffer> {
@@ -157,25 +161,51 @@ export async function generateRankCard(opts: RankCardOptions): Promise<Buffer> {
     rank,
     xpGained,
     botName = "CometPulse",
+    bgColor1 = "#0b0120",
+    bgColor2 = "#18064a",
+    accentColor = "#7c3cfa",
+    bgImageUrl,
   } = opts;
 
   // ── Background ────────────────────────────────────────────────────────────
-  const bgGrad = ctx.createLinearGradient(0, 0, W, H);
-  bgGrad.addColorStop(0, "#0b0120");
-  bgGrad.addColorStop(0.45, "#18064a");
-  bgGrad.addColorStop(1, "#0b0120");
-  ctx.fillStyle = bgGrad;
   roundedRect(ctx, 0, 0, W, H, 20);
-  ctx.fill();
+  ctx.save();
+  ctx.clip();
 
-  // Subtle purple glow bottom left
-  drawGlow(ctx, 100, H + 20, 160, "rgba(90, 30, 180, 0.25)");
-  // Subtle blue glow top right
-  drawGlow(ctx, W - 80, -20, 140, "rgba(40, 80, 220, 0.18)");
+  if (bgImageUrl) {
+    try {
+      const buf = await fetchBuffer(bgImageUrl);
+      const img = await loadImage(buf);
+      ctx.drawImage(img, 0, 0, W, H);
+      // Dark overlay so text stays readable
+      ctx.fillStyle = "rgba(0,0,0,0.55)";
+      ctx.fillRect(0, 0, W, H);
+    } catch {
+      const bgGrad = ctx.createLinearGradient(0, 0, W, H);
+      bgGrad.addColorStop(0, bgColor1);
+      bgGrad.addColorStop(0.45, bgColor2);
+      bgGrad.addColorStop(1, bgColor1);
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, W, H);
+    }
+  } else {
+    const bgGrad = ctx.createLinearGradient(0, 0, W, H);
+    bgGrad.addColorStop(0, bgColor1);
+    bgGrad.addColorStop(0.45, bgColor2);
+    bgGrad.addColorStop(1, bgColor1);
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, W, H);
+  }
+
+  ctx.restore();
+
+  // Subtle glow bottom left and top right using accent color
+  drawGlow(ctx, 100, H + 20, 160, `${accentColor}40`);
+  drawGlow(ctx, W - 80, -20, 140, `${accentColor}30`);
 
   // ── Border ────────────────────────────────────────────────────────────────
   roundedRect(ctx, 0, 0, W, H, 20);
-  ctx.strokeStyle = "rgba(110, 50, 200, 0.7)";
+  ctx.strokeStyle = `${accentColor}b3`;
   ctx.lineWidth = 1.5;
   ctx.stroke();
 
@@ -188,12 +218,12 @@ export async function generateRankCard(opts: RankCardOptions): Promise<Buffer> {
   const avR = 68;
 
   // Outer glow ring
-  drawGlow(ctx, avX, avY, avR + 28, "rgba(100, 40, 200, 0.22)");
+  drawGlow(ctx, avX, avY, avR + 28, `${accentColor}38`);
 
   // Ring border
   ctx.beginPath();
   ctx.arc(avX, avY, avR + 4, 0, Math.PI * 2);
-  ctx.strokeStyle = "rgba(130, 60, 240, 0.8)";
+  ctx.strokeStyle = `${accentColor}cc`;
   ctx.lineWidth = 2.5;
   ctx.stroke();
 
@@ -231,8 +261,8 @@ export async function generateRankCard(opts: RankCardOptions): Promise<Buffer> {
   ctx.beginPath();
   ctx.arc(badgeX, badgeY, badgeR, 0, Math.PI * 2);
   const badgeGrad = ctx.createRadialGradient(badgeX - 4, badgeY - 4, 2, badgeX, badgeY, badgeR);
-  badgeGrad.addColorStop(0, "#7c3cfa");
-  badgeGrad.addColorStop(1, "#4a1aad");
+  badgeGrad.addColorStop(0, accentColor);
+  badgeGrad.addColorStop(1, accentColor + "88");
   ctx.fillStyle = badgeGrad;
   ctx.fill();
 
@@ -317,8 +347,8 @@ export async function generateRankCard(opts: RankCardOptions): Promise<Buffer> {
     const fillW = Math.max(barR * 2, barW * progress);
     const barGrad = ctx.createLinearGradient(barX, 0, barX + fillW, 0);
     barGrad.addColorStop(0, "#3b82f6");
-    barGrad.addColorStop(0.5, "#7c3cfa");
-    barGrad.addColorStop(1, "#a855f7");
+    barGrad.addColorStop(0.5, accentColor);
+    barGrad.addColorStop(1, accentColor + "cc");
     roundedRect(ctx, barX, barY, fillW, barH, barR);
     ctx.fillStyle = barGrad;
     ctx.fill();

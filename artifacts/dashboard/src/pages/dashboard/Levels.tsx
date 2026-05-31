@@ -5,7 +5,7 @@ import {
   Card, Input, PageHeader, Spinner, Toggle,
   useToast, SaveBar, Button, Select,
 } from "../../components/ui";
-import { Plus, Trash2, Zap, Crown } from "lucide-react";
+import { Plus, Trash2, Zap, Crown, ImageIcon } from "lucide-react";
 
 const DEFAULT_CONFIG = {
   enabled: true,
@@ -40,6 +40,12 @@ export default function Levels() {
   const [roles, setRoles] = useState<any[]>([]);
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
 
+  const DEFAULT_CARD_CONFIG = { bgColor1: "#0b0120", bgColor2: "#18064a", accentColor: "#7c3cfa", bgImageUrl: "" };
+  const [cardConfig, setCardConfig] = useState({ ...DEFAULT_CARD_CONFIG });
+  const savedCardConfig = useRef({ ...DEFAULT_CARD_CONFIG });
+  const [savingCard, setSavingCard] = useState(false);
+  const cardDirty = JSON.stringify(cardConfig) !== JSON.stringify(savedCardConfig.current);
+
   const [newRewardLevel, setNewRewardLevel] = useState("");
   const [newRewardRole, setNewRewardRole] = useState("");
   const [newRoleMult, setNewRoleMult] = useState("");
@@ -60,13 +66,17 @@ export default function Levels() {
       api.guild.channels(guildId).catch(() => []),
       api.guild.roles(guildId).catch(() => []),
       api.guild.leaderboard(guildId).catch(() => []),
-    ]).then(([cfg, ch, ro, lb]) => {
+      api.guild.rankCardConfig(guildId).catch(() => DEFAULT_CARD_CONFIG),
+    ]).then(([cfg, ch, ro, lb, cc]) => {
       const f: Config = { ...DEFAULT_CONFIG, ...cfg, levelUpMessage: cfg.levelUpMessage ?? "" };
       setForm(f);
       savedForm.current = { ...f };
       setChannels(ch);
       setRoles(ro);
       setLeaderboard(lb);
+      const cardCfg = { ...DEFAULT_CARD_CONFIG, ...cc };
+      setCardConfig(cardCfg);
+      savedCardConfig.current = { ...cardCfg };
     }).catch(console.error).finally(() => setLoading(false));
   }, [guildId]);
 
@@ -89,6 +99,22 @@ export default function Levels() {
   };
 
   const discard = () => setForm({ ...savedForm.current });
+
+  const saveCard = async () => {
+    if (!guildId) return;
+    setSavingCard(true);
+    try {
+      await api.guild.updateRankCardConfig(guildId, cardConfig);
+      savedCardConfig.current = { ...cardConfig };
+      show("Rank card style saved!", "success");
+    } catch (e: any) {
+      show(e.message ?? "Failed to save", "error");
+    } finally {
+      setSavingCard(false);
+    }
+  };
+
+  const discardCard = () => setCardConfig({ ...savedCardConfig.current });
 
   const addReward = () => {
     const level = parseInt(newRewardLevel);
@@ -470,6 +496,117 @@ export default function Levels() {
               >
                 Set Timer
               </Button>
+            </div>
+          )}
+        </Card>
+
+        {/* ── Rank Card Style ───────────────────────────────────────────────── */}
+        <Card>
+          <h2 style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", marginBottom: 4, display: "flex", alignItems: "center", gap: 8 }}>
+            <ImageIcon size={15} color="var(--accent)" /> Rank Card Style
+          </h2>
+          <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 20 }}>
+            Customise the colours and background of the <code style={{ background: "var(--bg-input)", padding: "1px 5px", borderRadius: 4 }}>c!rank</code> card for this server.
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 20, marginBottom: 20 }}>
+            {/* BG Color 1 */}
+            <div>
+              <label style={{ fontSize: 12, fontWeight: 600, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: 8 }}>
+                Background Start
+              </label>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div style={{ position: "relative", width: 38, height: 38, borderRadius: 8, overflow: "hidden", border: "1px solid var(--border)", flexShrink: 0 }}>
+                  <input
+                    type="color"
+                    value={cardConfig.bgColor1}
+                    onChange={(e) => setCardConfig((c) => ({ ...c, bgColor1: e.target.value }))}
+                    style={{ position: "absolute", inset: "-4px", width: "calc(100% + 8px)", height: "calc(100% + 8px)", border: "none", cursor: "pointer", padding: 0 }}
+                  />
+                </div>
+                <input
+                  value={cardConfig.bgColor1}
+                  onChange={(e) => setCardConfig((c) => ({ ...c, bgColor1: e.target.value }))}
+                  style={{ flex: 1, background: "var(--bg-input)", border: "1px solid var(--border)", borderRadius: 8, padding: "8px 10px", color: "var(--text-primary)", fontSize: 12, fontFamily: "monospace", outline: "none", minWidth: 0 }}
+                  onFocus={(e) => (e.target.style.borderColor = "var(--accent)")}
+                  onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
+                />
+              </div>
+            </div>
+
+            {/* BG Color 2 */}
+            <div>
+              <label style={{ fontSize: 12, fontWeight: 600, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: 8 }}>
+                Background End
+              </label>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div style={{ position: "relative", width: 38, height: 38, borderRadius: 8, overflow: "hidden", border: "1px solid var(--border)", flexShrink: 0 }}>
+                  <input
+                    type="color"
+                    value={cardConfig.bgColor2}
+                    onChange={(e) => setCardConfig((c) => ({ ...c, bgColor2: e.target.value }))}
+                    style={{ position: "absolute", inset: "-4px", width: "calc(100% + 8px)", height: "calc(100% + 8px)", border: "none", cursor: "pointer", padding: 0 }}
+                  />
+                </div>
+                <input
+                  value={cardConfig.bgColor2}
+                  onChange={(e) => setCardConfig((c) => ({ ...c, bgColor2: e.target.value }))}
+                  style={{ flex: 1, background: "var(--bg-input)", border: "1px solid var(--border)", borderRadius: 8, padding: "8px 10px", color: "var(--text-primary)", fontSize: 12, fontFamily: "monospace", outline: "none", minWidth: 0 }}
+                  onFocus={(e) => (e.target.style.borderColor = "var(--accent)")}
+                  onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
+                />
+              </div>
+            </div>
+
+            {/* Accent Color */}
+            <div>
+              <label style={{ fontSize: 12, fontWeight: 600, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: 8 }}>
+                Accent Colour
+              </label>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div style={{ position: "relative", width: 38, height: 38, borderRadius: 8, overflow: "hidden", border: "1px solid var(--border)", flexShrink: 0 }}>
+                  <input
+                    type="color"
+                    value={cardConfig.accentColor}
+                    onChange={(e) => setCardConfig((c) => ({ ...c, accentColor: e.target.value }))}
+                    style={{ position: "absolute", inset: "-4px", width: "calc(100% + 8px)", height: "calc(100% + 8px)", border: "none", cursor: "pointer", padding: 0 }}
+                  />
+                </div>
+                <input
+                  value={cardConfig.accentColor}
+                  onChange={(e) => setCardConfig((c) => ({ ...c, accentColor: e.target.value }))}
+                  style={{ flex: 1, background: "var(--bg-input)", border: "1px solid var(--border)", borderRadius: 8, padding: "8px 10px", color: "var(--text-primary)", fontSize: 12, fontFamily: "monospace", outline: "none", minWidth: 0 }}
+                  onFocus={(e) => (e.target.style.borderColor = "var(--accent)")}
+                  onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Preview strip */}
+          <div style={{
+            height: 32, borderRadius: 8, marginBottom: 20,
+            background: `linear-gradient(90deg, ${cardConfig.bgColor1}, ${cardConfig.bgColor2}, ${cardConfig.bgColor1})`,
+            border: `1.5px solid ${cardConfig.accentColor}`,
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: cardConfig.accentColor, letterSpacing: "0.06em", textTransform: "uppercase" }}>Preview</span>
+          </div>
+
+          <Input
+            label="Background Image URL (optional)"
+            value={cardConfig.bgImageUrl}
+            onChange={(v) => setCardConfig((c) => ({ ...c, bgImageUrl: v }))}
+            placeholder="https://example.com/image.png"
+            hint="Direct image URL — leave blank to use the colour gradient above"
+          />
+
+          {cardDirty && (
+            <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
+              <Button onClick={saveCard} disabled={savingCard}>
+                {savingCard ? "Saving…" : "Save Style"}
+              </Button>
+              <Button variant="secondary" onClick={discardCard}>Discard</Button>
             </div>
           )}
         </Card>

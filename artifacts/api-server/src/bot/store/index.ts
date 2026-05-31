@@ -25,6 +25,7 @@ import { initCustomCommandsStore } from "./customCommands";
 import { initLevelsStore } from "./levels";
 import { initGiveawaysStore } from "./giveaways";
 import { initRolePanelStore } from "./rolePanel";
+import { initRankCardConfigStore } from "./rankCardConfig";
 import { logger } from "../../lib/logger";
 
 export async function initAllStores(): Promise<void> {
@@ -57,6 +58,7 @@ export async function initAllStores(): Promise<void> {
     initLevelsStore(),
     initGiveawaysStore(),
     initRolePanelStore(),
+    initRankCardConfigStore(),
   ]);
   logger.info("All stores initialised from PostgreSQL");
 }
