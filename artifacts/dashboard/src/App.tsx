@@ -106,7 +106,7 @@ export default function App() {
   return (
     <AuthContext.Provider value={{ user, loading, refetch }}>
       <MusicContext.Provider value={{ muted, toggleMute }}>
-        <audio ref={audioRef} src="/music.mp3" loop style={{ display: "none" }} />
+        <audio ref={audioRef} src="/dashboard-music.mp3" loop style={{ display: "none" }} />
         {needsClick && (
           <div style={{
             position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)",
