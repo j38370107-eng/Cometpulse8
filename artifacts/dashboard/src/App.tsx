@@ -15,6 +15,7 @@ import RolePanels from "./pages/dashboard/RolePanels";
 import Starboard from "./pages/dashboard/Starboard";
 import Suggestions from "./pages/dashboard/Suggestions";
 import EmbedBuilder from "./pages/dashboard/EmbedBuilder";
+import Commands from "./pages/dashboard/Commands";
 
 interface AuthCtx {
   user: any | null;
@@ -138,6 +139,7 @@ export default function App() {
               <Route path="starboard" element={<Starboard />} />
               <Route path="suggestions" element={<Suggestions />} />
               <Route path="embed-builder" element={<EmbedBuilder />} />
+              <Route path="commands" element={<Commands />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

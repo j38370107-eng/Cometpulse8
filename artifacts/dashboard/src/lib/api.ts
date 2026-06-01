@@ -80,5 +80,8 @@ export const api = {
       request<any>(`/guilds/${id}/embed-scheduled/${encodeURIComponent(schedId)}`, { method: "DELETE" }),
     sendEmbed: (id: string, data: { channelId: string; embedData: any; webhookName?: string; webhookAvatar?: string }) =>
       request<any>(`/guilds/${id}/embed-send`, { method: "POST", body: JSON.stringify(data) }),
+    commandConfig: (id: string) => request<any>(`/guilds/${id}/command-config`),
+    updateCommandConfig: (id: string, data: any) =>
+      request<any>(`/guilds/${id}/command-config`, { method: "PUT", body: JSON.stringify(data) }),
   },
 };

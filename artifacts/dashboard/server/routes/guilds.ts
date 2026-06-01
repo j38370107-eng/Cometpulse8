@@ -727,4 +727,19 @@ router.get("/:guildId/suggestions", ...auth, async (req: any, res: any) => {
 });
 
 
+// ── Command Config ─────────────────────────────────────────────────────────────
+router.get("/:guildId/command-config", ...auth, async (req: any, res: any) => {
+  const { guildId } = req.params;
+  const data = (await dbGet<any>("commandConfig", guildId)) ?? {};
+  res.json(data);
+});
+
+router.put("/:guildId/command-config", ...auth, async (req: any, res: any) => {
+  const { guildId } = req.params;
+  const existing = (await dbGet<any>("commandConfig", guildId)) ?? {};
+  const updated = { ...existing, ...req.body };
+  await dbSet("commandConfig", guildId, updated);
+  res.json(updated);
+});
+
 export default router;
