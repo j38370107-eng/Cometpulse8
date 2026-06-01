@@ -48,14 +48,14 @@ const CATEGORIES: { name: string; emoji: string; commands: string[] }[] = [
     emoji: "💡",
     commands: [
       "suggest",
-      "suggestionsconfig",
-      "viewsuggestion",
+      "suggestion",
+      "suggestconfig",
       "suggestionsleaderboard",
       "approve",
       "deny",
       "implement",
       "duplicate",
-      "deletesuggestion",
+      "delsuggestion",
     ],
   },
   {
@@ -138,21 +138,8 @@ export const helpCommand: Command = {
       }
     }
 
-    // Uncategorised fallback
-    const extra: string[] = [];
-    for (const [, cmd] of commands) {
-      if (seen.has(cmd.name)) continue;
-      seen.add(cmd.name);
-      extra.push(cmd.name);
-      totalCommands++;
-    }
-    if (extra.length > 0) {
-      categoryBlocks.push(`📦 **Other**\n${extra.join(", ")}`);
-    }
-
     const activeCats =
-      CATEGORIES.filter((c) => c.commands.some((n) => commands.has(n))).length +
-      (extra.length > 0 ? 1 : 0);
+      CATEGORIES.filter((c) => c.commands.some((n) => commands.has(n))).length;
 
     const description = [
       `**${totalCommands} commands** across **${activeCats} categories**.`,
