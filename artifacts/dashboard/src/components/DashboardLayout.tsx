@@ -7,7 +7,7 @@ import {
   Volume2, VolumeX, Gift, UserPlus, Layers, Star, Lightbulb, PenSquare, Terminal, Menu, X,
 } from "lucide-react";
 
-const INVITE_URL = "https://discord.com/oauth2/authorize?client_id=1507550967275458660&permissions=6293600228863223&integration_type=0&scope=bot";
+const INVITE_URL = "https://discord.com/oauth2/authorize?client_id=1509693686349565992&permissions=6781940128411633&integration_type=0&scope=bot";
 
 const NAV_SECTIONS = [
   {
