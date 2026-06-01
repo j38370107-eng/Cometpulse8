@@ -52,6 +52,8 @@ export default function DashboardLayout() {
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const accessCheckRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
@@ -98,6 +100,22 @@ export default function DashboardLayout() {
       }
     }).catch(() => setBotChecked(true));
   }, [guildId]);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null || touchStartY.current === null) return;
+    const dx = e.changedTouches[0].clientX - touchStartX.current;
+    const dy = e.changedTouches[0].clientY - touchStartY.current;
+    touchStartX.current = null;
+    touchStartY.current = null;
+    if (Math.abs(dy) > Math.abs(dx)) return;
+    if (dx > 60 && !sidebarOpen) setSidebarOpen(true);
+    if (dx < -60 && sidebarOpen) setSidebarOpen(false);
+  };
 
   const handleLogout = async () => {
     await api.auth.logout();
@@ -277,7 +295,11 @@ export default function DashboardLayout() {
   );
 
   return (
-    <div style={{ display: "flex", height: "100dvh", overflow: "hidden" }}>
+    <div
+      style={{ display: "flex", height: "100dvh", overflow: "hidden" }}
+      onTouchStart={isMobile ? handleTouchStart : undefined}
+      onTouchEnd={isMobile ? handleTouchEnd : undefined}
+    >
       {/* ── Desktop sidebar ── */}
       {!isMobile && (
         <aside style={{
