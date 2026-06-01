@@ -1,7 +1,7 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Card, Toggle, Badge, PageHeader, Spinner, useToast, SaveBar, Modal, Button } from "../../components/ui";
-import { Lock, Search } from "lucide-react";
+import { Lock } from "lucide-react";
 import { api } from "../../lib/api";
 
 const COMMAND_CATEGORIES = [
@@ -15,7 +15,6 @@ const COMMAND_CATEGORIES = [
   { label: "Embed",       commands: ["embed"] },
 ];
 
-const ALL_COMMANDS = COMMAND_CATEGORIES.flatMap(c => c.commands);
 
 type CmdPerm = {
   enabled: boolean;
@@ -108,9 +107,7 @@ export default function Commands() {
   const [savedConfig, setSavedConfig] = useState<Record<string, CmdPerm>>({});
   const [roles, setRoles] = useState<{ id: string; name: string }[]>([]);
   const [channels, setChannels] = useState<{ id: string; name: string }[]>([]);
-  const [selectedCmd, setSelectedCmd] = useState<string | null>(null);
   const [permCmd, setPermCmd] = useState<string | null>(null);
-  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const { show, ToastEl } = useToast();
@@ -167,12 +164,6 @@ export default function Commands() {
     return (p.allowedRoles?.length || p.deniedRoles?.length || p.allowedChannels?.length || p.deniedChannels?.length);
   };
 
-  const filteredCmds = useMemo(
-    () => ALL_COMMANDS.filter(c => c.includes(search.toLowerCase().trim())),
-    [search]
-  );
-
-  const selPerm = selectedCmd ? getCmd(selectedCmd) : null;
   const modalPerm = permCmd ? getCmd(permCmd) : null;
 
   if (loading) return <Spinner />;
@@ -247,72 +238,6 @@ export default function Commands() {
         ))}
       </div>
 
-      {/* ── Permissions ── */}
-      <div style={{ borderTop: "1px solid var(--border)", paddingTop: 36 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
-          <div style={{
-            width: 34, height: 34, borderRadius: 8,
-            background: "var(--accent-dim)", border: "1px solid rgba(139,92,246,0.3)",
-            display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-          }}>
-            <Lock size={16} color="var(--accent)" />
-          </div>
-          <div>
-            <div style={{ fontSize: 16, fontWeight: 800, color: "var(--text-primary)" }}>Set Permissions for a Command</div>
-            <div style={{ fontSize: 12, color: "var(--text-muted)" }}>Click any command to configure who can use it and where</div>
-          </div>
-        </div>
-
-        {/* Search */}
-        <div style={{ position: "relative", marginBottom: 14 }}>
-          <Search size={14} style={{
-            position: "absolute", left: 12, top: "50%",
-            transform: "translateY(-50%)", color: "var(--text-muted)", pointerEvents: "none",
-          }} />
-          <input
-            value={search}
-            onChange={e => { setSearch(e.target.value); setSelectedCmd(null); }}
-            placeholder="Search commands…"
-            style={{
-              width: "100%", padding: "10px 14px 10px 36px",
-              background: "var(--bg-card)", border: "1px solid var(--border)",
-              borderRadius: 8, color: "var(--text-primary)", fontSize: 13, outline: "none",
-              boxSizing: "border-box",
-            }}
-            onFocus={e => (e.target.style.borderColor = "var(--accent)")}
-            onBlur={e => (e.target.style.borderColor = "var(--border)")}
-          />
-        </div>
-
-        {/* Command grid */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8, marginBottom: 24 }}>
-          {filteredCmds.map(cmd => (
-            <button
-              key={cmd}
-              onClick={() => setPermCmd(cmd)}
-              style={{
-                padding: "10px 14px", textAlign: "left",
-                background: hasPerms(cmd) ? "var(--accent-dim)" : "var(--bg-card)",
-                border: `1px solid ${hasPerms(cmd) ? "rgba(139,92,246,0.4)" : "var(--border)"}`,
-                borderRadius: 8,
-                color: hasPerms(cmd) ? "var(--accent-bright)" : "var(--text-primary)",
-                fontFamily: "monospace", fontSize: 13, cursor: "pointer",
-                transition: "all 0.15s",
-                display: "flex", alignItems: "center", justifyContent: "space-between",
-              }}
-            >
-              {cmd}
-              {hasPerms(cmd) && <Lock size={11} style={{ flexShrink: 0 }} />}
-            </button>
-          ))}
-          {filteredCmds.length === 0 && (
-            <div style={{ gridColumn: "1/-1", textAlign: "center", color: "var(--text-muted)", fontSize: 13, padding: "16px 0" }}>
-              No commands match "{search}"
-            </div>
-          )}
-        </div>
-      </div>
-
       {/* ── Permissions Modal ── */}
       <Modal open={!!permCmd} onClose={() => setPermCmd(null)} title={`Permissions: ${permCmd}`} width={560}>
         {permCmd && modalPerm && (
@@ -368,7 +293,7 @@ export default function Commands() {
         )}
       </Modal>
 
-      <SaveBar dirty={dirty} saving={saving} onSave={save} onDiscard={() => { setConfig(savedConfig); setSelectedCmd(null); }} />
+      <SaveBar dirty={dirty} saving={saving} onSave={save} onDiscard={() => setConfig(savedConfig)} />
     </div>
   );
 }
