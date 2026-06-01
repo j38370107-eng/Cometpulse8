@@ -74,10 +74,14 @@ export const api = {
     updateEmbedSettings: (id: string, data: any) =>
       request<any>(`/guilds/${id}/embed-settings`, { method: "PUT", body: JSON.stringify(data) }),
     embedTemplates: (id: string) => request<any[]>(`/guilds/${id}/embed-templates`),
+    saveEmbedTemplate: (id: string, data: { name: string; data: any }) =>
+      request<any>(`/guilds/${id}/embed-templates`, { method: "POST", body: JSON.stringify(data) }),
     deleteEmbedTemplate: (id: string, name: string) =>
       request<any>(`/guilds/${id}/embed-templates/${encodeURIComponent(name)}`, { method: "DELETE" }),
     embedScheduled: (id: string) => request<any[]>(`/guilds/${id}/embed-scheduled`),
     cancelEmbedScheduled: (id: string, schedId: string) =>
       request<any>(`/guilds/${id}/embed-scheduled/${encodeURIComponent(schedId)}`, { method: "DELETE" }),
+    sendEmbed: (id: string, data: { channelId: string; embedData: any; webhookName?: string; webhookAvatar?: string }) =>
+      request<any>(`/guilds/${id}/embed-send`, { method: "POST", body: JSON.stringify(data) }),
   },
 };
