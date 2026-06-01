@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { api } from "../../lib/api";
 import { Card, StatCard, PageHeader, Badge, Spinner } from "../../components/ui";
-import { FileText, Ban, Zap, Bot, Shield, Settings, ChevronRight, ExternalLink, BookOpen, Activity, Gift, UserPlus, Layers, Star, Lightbulb, Ticket, BarChart2, ScrollText, AlertTriangle, Siren, List, PenSquare, Sliders, SlidersHorizontal } from "lucide-react";
+import { FileText, Ban, Zap, Bot, Shield, Settings, ChevronRight, ExternalLink, BookOpen, Activity, Gift, UserPlus, Layers, Star, Lightbulb, BarChart2, PenSquare } from "lucide-react";
 
 export default function Overview() {
   const { guildId } = useParams<{ guildId: string }>();
@@ -88,27 +88,13 @@ export default function Overview() {
       <h2 style={{ fontSize:16, fontWeight:700, color:"var(--text-primary)", marginBottom:12 }}>Quick Actions</h2>
       <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))", gap:12 }}>
         {[
-          { to:"shortcuts",       label:"Shortcuts",          desc:"Create & edit command shortcuts",     icon:<Zap size={18} />,             color:"var(--accent)" },
-          { to:"commands",        label:"Command Modules",    desc:"Enable or disable commands",           icon:<Bot size={18} />,             color:"var(--info)" },
-          { to:"cases",           label:"Case Log",           desc:"View all moderation cases",            icon:<FileText size={18} />,        color:"var(--warning)" },
-          { to:"automod",         label:"AutoMod",            desc:"Configure auto-moderation rules",      icon:<Shield size={18} />,          color:"var(--success)" },
-          { to:"applications",    label:"Applications",       desc:"Manage server application forms",      icon:<BookOpen size={18} />,        color:"#a855f7" },
-          { to:"settings",        label:"Settings",           desc:"Prefix, logging & more",               icon:<Settings size={18} />,        color:"var(--text-secondary)" },
-          { to:"giveaways",       label:"Giveaways",          desc:"Run & manage server giveaways",        icon:<Gift size={18} />,            color:"#f59e0b" },
-          { to:"welcome",         label:"Welcome",            desc:"Configure join/leave messages",        icon:<UserPlus size={18} />,        color:"#10b981" },
-          { to:"role-panels",     label:"Role Panels",        desc:"Self-assignable role menus",           icon:<Layers size={18} />,          color:"#6366f1" },
-          { to:"starboard",       label:"Starboard",          desc:"Highlight top messages",               icon:<Star size={18} />,            color:"#eab308" },
-          { to:"suggestions",     label:"Suggestions",        desc:"Community suggestion voting",          icon:<Lightbulb size={18} />,       color:"#06b6d4" },
-          { to:"embed-builder",   label:"Embed Builder",      desc:"Design & send custom embeds",          icon:<PenSquare size={18} />,       color:"#8b5cf6" },
-          { to:"tickets",         label:"Tickets",            desc:"Support ticket system",                icon:<Ticket size={18} />,          color:"#3b82f6" },
-          { to:"levels",          label:"Levels",             desc:"XP & levelling settings",              icon:<BarChart2 size={18} />,       color:"#f97316" },
-          { to:"logging",         label:"Logging",            desc:"Server event log channels",            icon:<ScrollText size={18} />,      color:"#64748b" },
-          { to:"anti-nuke",       label:"Anti-Nuke",          desc:"Protect against mass deletions",       icon:<AlertTriangle size={18} />,   color:"#ef4444" },
-          { to:"anti-raid",       label:"Anti-Raid",          desc:"Detect & stop raid attacks",           icon:<Siren size={18} />,           color:"#dc2626" },
-          { to:"audit-log",       label:"Audit Log",          desc:"View internal audit trail",            icon:<List size={18} />,            color:"#94a3b8" },
-          { to:"custom-commands", label:"Custom Commands",    desc:"Create your own bot commands",         icon:<Sliders size={18} />,         color:"#0ea5e9" },
-          { to:"command-perms",   label:"Command Perms",      desc:"Per-command permission overrides",     icon:<SlidersHorizontal size={18} />, color:"#7c3aed" },
-          { to:"moderation",      label:"Moderation Config",  desc:"Punishments & mod settings",           icon:<Shield size={18} />,          color:"#b45309" },
+          { to:"giveaways",     label:"Giveaways",      desc:"Run & manage server giveaways",    icon:<Gift size={18} />,       color:"#f59e0b" },
+          { to:"welcome",       label:"Welcome",        desc:"Configure join/leave messages",    icon:<UserPlus size={18} />,   color:"#10b981" },
+          { to:"role-panels",   label:"Role Panels",    desc:"Self-assignable role menus",       icon:<Layers size={18} />,     color:"#6366f1" },
+          { to:"starboard",     label:"Starboard",      desc:"Highlight top messages",           icon:<Star size={18} />,       color:"#eab308" },
+          { to:"suggestions",   label:"Suggestions",    desc:"Community suggestion voting",      icon:<Lightbulb size={18} />,  color:"#06b6d4" },
+          { to:"embed-builder", label:"Embed Builder",  desc:"Design & send custom embeds",      icon:<PenSquare size={18} />,  color:"#8b5cf6" },
+          { to:"levels",        label:"Levels",         desc:"XP & levelling settings",          icon:<BarChart2 size={18} />,  color:"#f97316" },
         ].map(({ to, label, desc, icon, color }) => (
           <Link key={to} to={to} style={{ display:"block", textDecoration:"none" }}>
             <Card style={{ cursor:"pointer", transition:"all 0.15s", borderColor:"var(--border)" }}
