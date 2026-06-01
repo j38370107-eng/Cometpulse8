@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams } from "react-router-dom";
-import { Card, Toggle, Badge, PageHeader, Spinner, useToast, SaveBar } from "../../components/ui";
+import { Card, Toggle, Badge, PageHeader, Spinner, useToast, SaveBar, Modal, Button } from "../../components/ui";
 import { Lock, Search } from "lucide-react";
 import { api } from "../../lib/api";
 
@@ -33,7 +33,7 @@ const DEFAULT_PERM: CmdPerm = {
   deniedChannels: [],
 };
 
-function ItemPicker({ label, icon, value, available, placeholder, onChange }: {
+function PermissionPicker({ label, icon, value, available, placeholder, onChange }: {
   label: string;
   icon: "allow" | "deny";
   value: string[];
@@ -45,7 +45,7 @@ function ItemPicker({ label, icon, value, available, placeholder, onChange }: {
   const iconColor = icon === "allow" ? "var(--success)" : "var(--danger)";
 
   return (
-    <div style={{ marginBottom: 22 }}>
+    <div style={{ marginBottom: 20 }}>
       <div style={{
         fontSize: 11, fontWeight: 800, letterSpacing: "0.1em",
         textTransform: "uppercase", color: "var(--text-primary)",
@@ -109,6 +109,7 @@ export default function Commands() {
   const [roles, setRoles] = useState<{ id: string; name: string }[]>([]);
   const [channels, setChannels] = useState<{ id: string; name: string }[]>([]);
   const [selectedCmd, setSelectedCmd] = useState<string | null>(null);
+  const [permCmd, setPermCmd] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -160,12 +161,19 @@ export default function Commands() {
     }
   };
 
+  const hasPerms = (cmd: string) => {
+    const p = config[cmd];
+    if (!p) return false;
+    return (p.allowedRoles?.length || p.deniedRoles?.length || p.allowedChannels?.length || p.deniedChannels?.length);
+  };
+
   const filteredCmds = useMemo(
     () => ALL_COMMANDS.filter(c => c.includes(search.toLowerCase().trim())),
     [search]
   );
 
   const selPerm = selectedCmd ? getCmd(selectedCmd) : null;
+  const modalPerm = permCmd ? getCmd(permCmd) : null;
 
   if (loading) return <Spinner />;
 
@@ -209,6 +217,29 @@ export default function Commands() {
                   flex: 1, fontSize: 13, fontWeight: 600, fontFamily: "monospace",
                   color: getCmd(cmd).enabled ? "var(--text-primary)" : "var(--text-muted)",
                 }}>{cmd}</code>
+                <button
+                  onClick={() => setPermCmd(cmd)}
+                  title="Edit permissions"
+                  style={{
+                    background: hasPerms(cmd) ? "var(--accent-dim)" : "none",
+                    border: hasPerms(cmd) ? "1px solid rgba(139,92,246,0.35)" : "1px solid transparent",
+                    borderRadius: 6, cursor: "pointer",
+                    padding: "4px 7px", marginRight: 10,
+                    display: "flex", alignItems: "center",
+                    color: hasPerms(cmd) ? "var(--accent)" : "var(--text-muted)",
+                    transition: "all 0.15s",
+                  }}
+                  onMouseEnter={e => {
+                    (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--accent)";
+                    (e.currentTarget as HTMLButtonElement).style.color = "var(--accent)";
+                  }}
+                  onMouseLeave={e => {
+                    (e.currentTarget as HTMLButtonElement).style.borderColor = hasPerms(cmd) ? "rgba(139,92,246,0.35)" : "transparent";
+                    (e.currentTarget as HTMLButtonElement).style.color = hasPerms(cmd) ? "var(--accent)" : "var(--text-muted)";
+                  }}
+                >
+                  <Lock size={13} />
+                </button>
                 <Toggle checked={getCmd(cmd).enabled} onChange={v => updateCmd(cmd, { enabled: v })} />
               </div>
             ))}
@@ -258,19 +289,20 @@ export default function Commands() {
           {filteredCmds.map(cmd => (
             <button
               key={cmd}
-              onClick={() => setSelectedCmd(cmd === selectedCmd ? null : cmd)}
+              onClick={() => setPermCmd(cmd)}
               style={{
                 padding: "10px 14px", textAlign: "left",
-                background: selectedCmd === cmd ? "var(--accent-dim)" : "var(--bg-card)",
-                border: `1px solid ${selectedCmd === cmd ? "var(--accent)" : "var(--border)"}`,
+                background: hasPerms(cmd) ? "var(--accent-dim)" : "var(--bg-card)",
+                border: `1px solid ${hasPerms(cmd) ? "rgba(139,92,246,0.4)" : "var(--border)"}`,
                 borderRadius: 8,
-                color: selectedCmd === cmd ? "var(--accent-bright)" : "var(--text-primary)",
+                color: hasPerms(cmd) ? "var(--accent-bright)" : "var(--text-primary)",
                 fontFamily: "monospace", fontSize: 13, cursor: "pointer",
                 transition: "all 0.15s",
-                boxShadow: selectedCmd === cmd ? "0 0 10px rgba(139,92,246,0.18)" : "none",
+                display: "flex", alignItems: "center", justifyContent: "space-between",
               }}
             >
               {cmd}
+              {hasPerms(cmd) && <Lock size={11} style={{ flexShrink: 0 }} />}
             </button>
           ))}
           {filteredCmds.length === 0 && (
@@ -279,43 +311,62 @@ export default function Commands() {
             </div>
           )}
         </div>
-
-        {/* Permission panel */}
-        {selectedCmd && selPerm && (
-          <Card style={{ padding: 0, overflow: "hidden" }}>
-            <div style={{
-              padding: "13px 20px",
-              background: "var(--bg-secondary)", borderBottom: "1px solid var(--border)",
-              display: "flex", alignItems: "center", justifyContent: "space-between",
-            }}>
-              <code style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", fontFamily: "monospace" }}>
-                {selectedCmd}
-              </code>
-              <button
-                onClick={() => setSelectedCmd(null)}
-                style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: 20, lineHeight: 1, padding: 2 }}
-              >×</button>
-            </div>
-            <div style={{ padding: "20px 24px" }}>
-              <div style={{
-                background: "rgba(139,92,246,0.07)", border: "1px solid rgba(139,92,246,0.18)",
-                borderRadius: 8, padding: "12px 16px", marginBottom: 24,
-                fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.85,
-              }}>
-                <strong style={{ color: "var(--text-primary)" }}>Allowed Roles</strong> — only listed roles can use this command (blank = everyone)<br />
-                <strong style={{ color: "var(--text-primary)" }}>Denied Roles</strong> — these roles are blocked<br />
-                <strong style={{ color: "var(--text-primary)" }}>Allowed Channels</strong> — only these channels (blank = all channels)<br />
-                <strong style={{ color: "var(--text-primary)" }}>Denied Channels</strong> — blocked channels
-              </div>
-
-              <ItemPicker label="Allowed Roles"    icon="allow" value={selPerm.allowedRoles}    available={roles}    placeholder="Add role…"    onChange={v => updateCmd(selectedCmd, { allowedRoles: v })} />
-              <ItemPicker label="Denied Roles"     icon="deny"  value={selPerm.deniedRoles}     available={roles}    placeholder="Add role…"    onChange={v => updateCmd(selectedCmd, { deniedRoles: v })} />
-              <ItemPicker label="Allowed Channels" icon="allow" value={selPerm.allowedChannels} available={channels} placeholder="Add channel…" onChange={v => updateCmd(selectedCmd, { allowedChannels: v })} />
-              <ItemPicker label="Denied Channels"  icon="deny"  value={selPerm.deniedChannels}  available={channels} placeholder="Add channel…" onChange={v => updateCmd(selectedCmd, { deniedChannels: v })} />
-            </div>
-          </Card>
-        )}
       </div>
+
+      {/* ── Permissions Modal ── */}
+      <Modal open={!!permCmd} onClose={() => setPermCmd(null)} title={`Permissions: ${permCmd}`} width={560}>
+        {permCmd && modalPerm && (
+          <div>
+            <div style={{
+              background: "var(--bg-input)", border: "1px solid var(--border)",
+              borderRadius: 8, padding: "12px 16px", marginBottom: 24,
+              fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.85,
+            }}>
+              <strong style={{ color: "var(--text-primary)" }}>Allowed Roles</strong> — only listed roles can use this command (blank = everyone)<br />
+              <strong style={{ color: "var(--text-primary)" }}>Denied Roles</strong> — these roles are blocked<br />
+              <strong style={{ color: "var(--text-primary)" }}>Allowed Channels</strong> — only these channels (blank = all channels)<br />
+              <strong style={{ color: "var(--text-primary)" }}>Denied Channels</strong> — blocked channels
+            </div>
+
+            <PermissionPicker
+              label="Allowed Roles"
+              icon="allow"
+              value={modalPerm.allowedRoles}
+              available={roles}
+              placeholder="Add role…"
+              onChange={v => updateCmd(permCmd, { allowedRoles: v })}
+            />
+            <PermissionPicker
+              label="Denied Roles"
+              icon="deny"
+              value={modalPerm.deniedRoles}
+              available={roles}
+              placeholder="Add role…"
+              onChange={v => updateCmd(permCmd, { deniedRoles: v })}
+            />
+            <PermissionPicker
+              label="Allowed Channels"
+              icon="allow"
+              value={modalPerm.allowedChannels}
+              available={channels}
+              placeholder="Add channel…"
+              onChange={v => updateCmd(permCmd, { allowedChannels: v })}
+            />
+            <PermissionPicker
+              label="Denied Channels"
+              icon="deny"
+              value={modalPerm.deniedChannels}
+              available={channels}
+              placeholder="Add channel…"
+              onChange={v => updateCmd(permCmd, { deniedChannels: v })}
+            />
+
+            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
+              <Button variant="secondary" onClick={() => setPermCmd(null)}>Done</Button>
+            </div>
+          </div>
+        )}
+      </Modal>
 
       <SaveBar dirty={dirty} saving={saving} onSave={save} onDiscard={() => { setConfig(savedConfig); setSelectedCmd(null); }} />
     </div>
