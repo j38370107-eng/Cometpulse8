@@ -18,7 +18,6 @@ const FEATURES = [
   { icon: "🎁", label: "GIVEAWAYS", desc: "Easy giveaway creation with re-roll, end, bonus entries, and winner management." },
   { icon: "⭐", label: "STARBOARD", desc: "Auto-highlight popular messages with star reactions. Star levels, custom emoji, and leaderboard." },
   { icon: "💡", label: "SUGGESTIONS", desc: "Community suggestions with vote buttons, staff review, DM notifications, and discussion threads." },
-  { icon: "🎵", label: "MUSIC", desc: "Full music player — YouTube, playlists, queue, loop, shuffle, DJ role, and volume control." },
   { icon: "🎛️", label: "ROLE PANELS", desc: "Button, dropdown, and reaction role panels. Assign roles on click or reaction in any channel." },
   { icon: "🛡️", label: "ETC.", desc: "Anti-nuke, anti-raid, automod, tickets, applications, moderation, invite tracking, and much more." },
 ];

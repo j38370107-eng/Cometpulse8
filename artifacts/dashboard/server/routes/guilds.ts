@@ -726,28 +726,5 @@ router.get("/:guildId/suggestions", ...auth, async (req: any, res: any) => {
   res.json(data);
 });
 
-// ── Music Config ───────────────────────────────────────────────────────────────
-router.get("/:guildId/music-config", ...auth, async (req: any, res: any) => {
-  const { guildId } = req.params;
-  const data = (await dbGet<any>("musicConfig", guildId)) ?? {
-    djRole: "", musicChannel: "", defaultVolume: 50, maxQueueSize: 100,
-    autoDisconnectMs: 300000, announceNowPlaying: true, voteskipPercent: 50,
-    allowedSources: ["youtube", "spotify", "soundcloud"],
-  };
-  res.json(data);
-});
-
-router.put("/:guildId/music-config", ...auth, async (req: any, res: any) => {
-  const { guildId } = req.params;
-  const existing = (await dbGet<any>("musicConfig", guildId)) ?? {};
-  const updated = { ...existing, ...req.body };
-  await dbSet("musicConfig", guildId, updated);
-  await fetch(`http://localhost:3000/internal/reload`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ store: "musicConfig", guildId }),
-  }).catch(() => {});
-  res.json(updated);
-});
 
 export default router;

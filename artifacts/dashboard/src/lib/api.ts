@@ -67,9 +67,6 @@ export const api = {
     updateSuggestionConfig: (id: string, data: any) =>
       request<any>(`/guilds/${id}/suggestions/config`, { method: "PUT", body: JSON.stringify(data) }),
     suggestions: (id: string) => request<any[]>(`/guilds/${id}/suggestions`),
-    musicConfig: (id: string) => request<any>(`/guilds/${id}/music-config`),
-    updateMusicConfig: (id: string, data: any) =>
-      request<any>(`/guilds/${id}/music-config`, { method: "PUT", body: JSON.stringify(data) }),
     embedSettings: (id: string) => request<any>(`/guilds/${id}/embed-settings`),
     updateEmbedSettings: (id: string, data: any) =>
       request<any>(`/guilds/${id}/embed-settings`, { method: "PUT", body: JSON.stringify(data) }),
