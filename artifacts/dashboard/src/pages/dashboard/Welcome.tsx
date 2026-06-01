@@ -110,7 +110,7 @@ export default function Welcome() {
   ];
 
   return (
-    <div style={{ padding: 24, maxWidth: 860, margin: "0 auto" }}>
+    <div className="dash-page" style={{ maxWidth: 860, margin: "0 auto" }}>
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
         <div>

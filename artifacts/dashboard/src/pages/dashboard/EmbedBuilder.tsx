@@ -368,7 +368,7 @@ export default function EmbedBuilder() {
   // ── Render ───────────────────────────────────────────────────────────────────
 
   return (
-    <div style={{ padding: "24px 28px" }}>
+    <div className="dash-page">
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
         <div style={{ width: 38, height: 38, borderRadius: 10, background: "rgba(88,101,242,0.15)", border: "1.5px solid rgba(88,101,242,0.4)", display: "flex", alignItems: "center", justifyContent: "center" }}>

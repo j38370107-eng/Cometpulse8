@@ -169,7 +169,7 @@ export default function Commands() {
   if (loading) return <Spinner />;
 
   return (
-    <div style={{ padding: "32px 32px 96px" }}>
+    <div className="dash-page">
       {ToastEl}
       <PageHeader
         title="Commands"

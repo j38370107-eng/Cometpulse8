@@ -729,7 +729,7 @@ export default function RolePanels() {
   const MODE_BADGE: Record<string, string> = { toggle: "Toggle", exclusive: "Exclusive", verify: "Verify", reversed: "Reversed" };
 
   return (
-    <div style={{ padding: 24, maxWidth: 900, margin: "0 auto" }}>
+    <div className="dash-page" style={{ maxWidth: 900, margin: "0 auto" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>

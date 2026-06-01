@@ -48,9 +48,10 @@ export function Input({ value, onChange, placeholder, type="text", style, label,
         type={type} value={value} placeholder={placeholder}
         onChange={e => onChange(e.target.value)}
         style={{
-          background:"var(--bg-input)", border:"1px solid var(--border)", borderRadius:8,
-          padding:"10px 14px", color:"var(--text-primary)", fontSize:13, outline:"none",
-          transition:"border-color 0.15s", width:"100%", ...style
+          padding:"10px 14px", background:"var(--bg-input)",
+          border:"1px solid var(--border)", borderRadius:8,
+          color:"var(--text-primary)", fontSize:13, outline:"none",
+          width:"100%", transition:"border-color 0.15s", ...style
         }}
         onFocus={e => (e.target.style.borderColor = "var(--accent)")}
         onBlur={e => (e.target.style.borderColor = "var(--border)")}
@@ -72,9 +73,10 @@ export function TextArea({ value, onChange, placeholder, rows=4, style, label }:
         value={value} placeholder={placeholder} rows={rows}
         onChange={e => onChange(e.target.value)}
         style={{
-          background:"var(--bg-input)", border:"1px solid var(--border)", borderRadius:8,
-          padding:"10px 14px", color:"var(--text-primary)", fontSize:13, outline:"none",
-          resize:"vertical", transition:"border-color 0.15s", width:"100%", ...style
+          padding:"10px 14px", background:"var(--bg-input)",
+          border:"1px solid var(--border)", borderRadius:8,
+          color:"var(--text-primary)", fontSize:13, outline:"none",
+          width:"100%", resize:"vertical", transition:"border-color 0.15s", ...style
         }}
         onFocus={e => (e.target.style.borderColor = "var(--accent)")}
         onBlur={e => (e.target.style.borderColor = "var(--border)")}
@@ -83,113 +85,121 @@ export function TextArea({ value, onChange, placeholder, rows=4, style, label }:
   );
 }
 
-interface SelectProps {
-  value: string; onChange: (v: string) => void; label?: string; style?: CSSProperties;
-  children: ReactNode;
-}
+interface SelectProps { value: string; onChange: (v: string) => void; label?: string; style?: CSSProperties; children: ReactNode; }
 export function Select({ value, onChange, label, style, children }: SelectProps) {
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
       {label && <label style={{ fontSize:12, fontWeight:600, color:"var(--text-secondary)", textTransform:"uppercase", letterSpacing:"0.05em" }}>{label}</label>}
-      <select
-        value={value} onChange={e => onChange(e.target.value)}
+      <select value={value} onChange={e => onChange(e.target.value)}
         style={{
-          background:"var(--bg-input)", border:"1px solid var(--border)", borderRadius:8,
-          padding:"10px 14px", color:"var(--text-primary)", fontSize:13, outline:"none",
-          cursor:"pointer", width:"100%", ...style
+          padding:"10px 14px", background:"var(--bg-input)",
+          border:"1px solid var(--border)", borderRadius:8,
+          color:"var(--text-primary)", fontSize:13, outline:"none",
+          width:"100%", cursor:"pointer", ...style
         }}
+        onFocus={e => (e.target.style.borderColor = "var(--accent)")}
+        onBlur={e => (e.target.style.borderColor = "var(--border)")}
       >{children}</select>
     </div>
   );
 }
 
-interface ToggleProps { checked: boolean; onChange: (v: boolean) => void; label?: string; disabled?: boolean; }
-export function Toggle({ checked, onChange, label, disabled }: ToggleProps) {
+export function Toggle({ checked, onChange, label, disabled }: { checked: boolean; onChange: (v: boolean) => void; label?: string; disabled?: boolean }) {
   return (
-    <label style={{ display:"flex", alignItems:"center", gap:10, cursor: disabled ? "not-allowed" : "pointer" }}>
+    <label style={{ display:"inline-flex", alignItems:"center", gap:8, cursor: disabled ? "not-allowed" : "pointer", opacity: disabled ? 0.5 : 1 }}>
       <div
         onClick={() => !disabled && onChange(!checked)}
         style={{
-          width:40, height:22, borderRadius:11, position:"relative", transition:"background 0.2s",
-          background: checked ? "var(--accent)" : "var(--bg-input)", border:"1px solid", flexShrink:0,
-          borderColor: checked ? "var(--accent)" : "var(--border)", opacity: disabled ? 0.5 : 1,
+          width:40, height:22, borderRadius:11,
+          background: checked ? "var(--accent)" : "var(--bg-input)",
+          border:`1px solid ${checked ? "var(--accent)" : "var(--border)"}`,
+          position:"relative", transition:"all 0.2s", flexShrink:0,
         }}
       >
         <div style={{
-          width:16, height:16, borderRadius:"50%", background:"#fff",
-          position:"absolute", top:2, transition:"left 0.2s",
-          left: checked ? 20 : 2,
+          position:"absolute", top:2,
+          left: checked ? 19 : 2,
+          width:16, height:16, borderRadius:"50%",
+          background:"#fff", transition:"left 0.2s",
+          boxShadow:"0 1px 4px rgba(0,0,0,0.3)",
         }} />
       </div>
-      {label && <span style={{ fontSize:13, color:"var(--text-secondary)" }}>{label}</span>}
+      {label && <span style={{ fontSize:13, color:"var(--text-primary)" }}>{label}</span>}
     </label>
   );
 }
 
-interface BadgeProps { children: ReactNode; color?: "accent"|"success"|"danger"|"warning"|"info"|"muted"; }
-export function Badge({ children, color="muted" }: BadgeProps) {
-  const colors: Record<string, CSSProperties> = {
-    accent: { background:"var(--accent-dim)", color:"var(--accent)", border:"1px solid rgba(240,165,0,0.3)" },
-    success: { background:"var(--success-dim)", color:"var(--success)", border:"1px solid rgba(34,197,94,0.3)" },
-    danger: { background:"var(--danger-dim)", color:"var(--danger)", border:"1px solid rgba(239,68,68,0.3)" },
-    warning: { background:"rgba(245,158,11,0.15)", color:"var(--warning)", border:"1px solid rgba(245,158,11,0.3)" },
-    info: { background:"rgba(59,130,246,0.15)", color:"var(--info)", border:"1px solid rgba(59,130,246,0.3)" },
-    muted: { background:"var(--bg-input)", color:"var(--text-secondary)", border:"1px solid var(--border)" },
+export function Badge({ children, color="muted" }: { children: ReactNode; color?: string }) {
+  const colors: Record<string, { bg: string; text: string }> = {
+    muted:   { bg:"var(--bg-input)",     text:"var(--text-muted)" },
+    accent:  { bg:"var(--accent-dim)",   text:"var(--accent)" },
+    success: { bg:"rgba(34,197,94,0.15)",text:"var(--success)" },
+    danger:  { bg:"rgba(239,68,68,0.15)",text:"var(--danger)" },
+    warning: { bg:"rgba(245,158,11,0.15)",text:"var(--warning)" },
+    info:    { bg:"rgba(59,130,246,0.15)",text:"var(--info)" },
   };
+  const c = colors[color] ?? colors.muted;
   return (
-    <span style={{ padding:"3px 8px", borderRadius:6, fontSize:11, fontWeight:600, display:"inline-flex", alignItems:"center", ...colors[color] }}>
-      {children}
-    </span>
+    <span style={{
+      display:"inline-flex", alignItems:"center",
+      padding:"2px 8px", borderRadius:6,
+      fontSize:11, fontWeight:700,
+      background:c.bg, color:c.text,
+    }}>{children}</span>
   );
 }
 
-interface PageHeaderProps { title: string; subtitle?: string; children?: ReactNode; }
-export function PageHeader({ title, subtitle, children }: PageHeaderProps) {
+export function PageHeader({ title, subtitle, children }: { title: string; subtitle?: string; children?: ReactNode }) {
   return (
-    <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", marginBottom:24, gap:12, flexWrap:"wrap" }}>
+    <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", marginBottom:28, flexWrap:"wrap", gap:12 }}>
       <div>
         <h1 style={{ fontSize:22, fontWeight:800, color:"var(--text-primary)", marginBottom:4 }}>{title}</h1>
-        {subtitle && <p style={{ color:"var(--text-secondary)", fontSize:13 }}>{subtitle}</p>}
+        {subtitle && <div style={{ fontSize:13, color:"var(--text-secondary)" }}>{subtitle}</div>}
       </div>
-      {children && <div style={{ display:"flex", gap:8, alignItems:"center" }}>{children}</div>}
+      {children && <div style={{ display:"flex", gap:10, flexWrap:"wrap" }}>{children}</div>}
     </div>
   );
 }
 
-interface ToastProps { message: string; type?: "success"|"error"|"info"; onClose: () => void; }
-export function Toast({ message, type="info", onClose }: ToastProps) {
-  const colors = { success:"var(--success)", error:"var(--danger)", info:"var(--accent)" };
+export function Toast({ message, type="info", onClose }: { message: string; type?: string; onClose: () => void }) {
+  const colors = { success:"var(--success)", error:"var(--danger)", info:"var(--accent)" } as any;
   return (
     <div style={{
-      position:"fixed", bottom:24, right:24, zIndex:1000, background:"var(--bg-card)",
-      border:`1px solid ${colors[type]}`, borderRadius:10, padding:"12px 16px", maxWidth:320,
-      display:"flex", alignItems:"center", gap:10, boxShadow:"0 8px 32px rgba(0,0,0,0.4)",
+      position:"fixed", top:20, right:20, zIndex:9999,
+      background:"var(--bg-card)", border:`1px solid ${colors[type] ?? colors.info}`,
+      borderRadius:10, padding:"12px 18px",
+      display:"flex", alignItems:"center", gap:10,
+      boxShadow:"0 8px 32px rgba(0,0,0,0.5)",
+      fontSize:13, fontWeight:600, color:"var(--text-primary)",
+      maxWidth: "calc(100vw - 40px)",
     }}>
-      <div style={{ width:8, height:8, borderRadius:"50%", background:colors[type], flexShrink:0 }} />
-      <span style={{ fontSize:13, color:"var(--text-primary)", flex:1 }}>{message}</span>
-      <button onClick={onClose} style={{ background:"none", border:"none", color:"var(--text-muted)", fontSize:16, lineHeight:1, padding:0 }}>×</button>
+      <div style={{ width:8, height:8, borderRadius:"50%", background:colors[type] ?? colors.info, flexShrink:0 }} />
+      {message}
+      <button onClick={onClose} style={{ background:"none", border:"none", color:"var(--text-muted)", cursor:"pointer", padding:2, marginLeft:4, fontSize:16 }}>×</button>
     </div>
   );
 }
 
 export function useToast() {
-  const [toast, setToast] = useState<{ message: string; type: "success"|"error"|"info" } | null>(null);
-  const show = (message: string, type: "success"|"error"|"info" = "info") => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
+  const [state, setState] = useState<{ message: string; type: string } | null>(null);
+  const show = (message: string, type = "info") => {
+    setState({ message, type });
+    setTimeout(() => setState(null), 3500);
   };
-  const ToastEl = toast ? <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} /> : null;
+  const ToastEl = state ? <Toast message={state.message} type={state.type} onClose={() => setState(null)} /> : null;
   return { show, ToastEl };
 }
 
 export function Spinner() {
   return (
-    <div style={{ display:"flex", alignItems:"center", justifyContent:"center", padding:48 }}>
+    <div style={{ display:"flex", alignItems:"center", justifyContent:"center", height:"60vh" }}>
       <div style={{
-        width:32, height:32, borderRadius:"50%", border:"3px solid var(--border)",
-        borderTopColor:"var(--accent)", animation:"spin 0.7s linear infinite"
+        width:32, height:32, borderRadius:"50%",
+        border:"3px solid var(--border)",
+        borderTopColor:"var(--accent)",
+        animation:"spin 0.8s linear infinite",
       }} />
-      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+      <style>{`@keyframes spin { to { transform:rotate(360deg); } }`}</style>
     </div>
   );
 }
@@ -198,25 +208,25 @@ interface ModalProps { open: boolean; onClose: () => void; title: string; childr
 export function Modal({ open, onClose, title, children, width=480 }: ModalProps) {
   if (!open) return null;
   return (
-    <div style={{ position:"fixed", inset:0, zIndex:100, display:"flex", alignItems:"center", justifyContent:"center", padding:16 }}>
+    <div style={{ position:"fixed", inset:0, zIndex:100, display:"flex", alignItems:"center", justifyContent:"center", padding:12 }}>
       <div onClick={onClose} style={{ position:"absolute", inset:0, background:"rgba(0,0,0,0.7)" }} />
-      <div style={{
+      <div className="modal-inner" style={{
         position:"relative", background:"var(--bg-card)", border:"1px solid var(--border)",
-        borderRadius:12, width:"100%", maxWidth:width, maxHeight:"90vh", overflow:"auto",
+        borderRadius:12, width:"100%", maxWidth:width, maxHeight:"90dvh", overflow:"auto",
         boxShadow:"0 24px 64px rgba(0,0,0,0.5)",
       }}>
-        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"20px 24px", borderBottom:"1px solid var(--border)" }}>
-          <h2 style={{ fontSize:16, fontWeight:700, color:"var(--text-primary)" }}>{title}</h2>
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"18px 20px", borderBottom:"1px solid var(--border)", position:"sticky", top:0, background:"var(--bg-card)", zIndex:1 }}>
+          <h2 style={{ fontSize:15, fontWeight:700, color:"var(--text-primary)" }}>{title}</h2>
           <button onClick={onClose} style={{ background:"none", border:"none", color:"var(--text-muted)", fontSize:20, lineHeight:1, padding:4 }}>×</button>
         </div>
-        <div style={{ padding:24 }}>{children}</div>
+        <div style={{ padding:"20px" }}>{children}</div>
       </div>
     </div>
   );
 }
 
 export function StatCard({ label, value, icon, color="accent" }: { label: string; value: string|number; icon: ReactNode; color?: string }) {
-  const colors: Record<string, string> = { accent:"var(--accent)", success:"var(--success)", danger:"var(--danger)", info:"var(--info)" };
+  const colors: Record<string, string> = { accent:"var(--accent)", success:"var(--success)", danger:"var(--danger)", info:"var(--info)", warning:"var(--warning)" };
   const c = colors[color] ?? colors.accent;
   return (
     <Card style={{ display:"flex", alignItems:"center", gap:16 }}>
@@ -245,7 +255,7 @@ export function EmptyState({ icon, title, description, action }: { icon: ReactNo
 interface SaveBarProps { dirty: boolean; saving: boolean; onSave: () => void; onDiscard: () => void; }
 export function SaveBar({ dirty, saving, onSave, onDiscard }: SaveBarProps) {
   return (
-    <div style={{
+    <div className="save-bar" style={{
       position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 200,
       transform: dirty ? "translateY(0)" : "translateY(100%)",
       transition: "transform 0.25s cubic-bezier(0.4,0,0.2,1)",
@@ -253,16 +263,17 @@ export function SaveBar({ dirty, saving, onSave, onDiscard }: SaveBarProps) {
       borderTop: "1px solid var(--accent)",
       boxShadow: "0 -4px 32px rgba(0,0,0,0.45)",
       display: "flex", alignItems: "center", justifyContent: "space-between",
-      padding: "14px 32px", gap: 16,
+      padding: "14px 32px", gap: 16, flexWrap: "wrap",
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
         <div style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--accent)", flexShrink: 0 }} />
-        <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)" }}>
+        <span className="save-bar-msg" style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)" }}>
           Want to save your changes?
         </span>
       </div>
       <div style={{ display: "flex", gap: 10 }}>
         <button
+          className="save-bar-btn-discard"
           onClick={onDiscard}
           disabled={saving}
           style={{
@@ -275,6 +286,7 @@ export function SaveBar({ dirty, saving, onSave, onDiscard }: SaveBarProps) {
           Discard
         </button>
         <button
+          className="save-bar-btn-save"
           onClick={onSave}
           disabled={saving}
           style={{

@@ -161,7 +161,7 @@ export default function Levels() {
   if (loading) return <Spinner />;
 
   return (
-    <div style={{ padding: "32px 32px 96px", maxWidth: 780 }}>
+    <div className="dash-page" style={{ maxWidth: 780 }}>
       {ToastEl}
       <PageHeader
         title="⚡ Levels"

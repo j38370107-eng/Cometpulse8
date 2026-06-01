@@ -46,7 +46,7 @@ export default function Settings() {
   if (loading) return <Spinner />;
 
   return (
-    <div style={{ padding: "32px 32px 96px", maxWidth: 720 }}>
+    <div className="dash-page" style={{ maxWidth: 720 }}>
       {ToastEl}
       <PageHeader title="Server Settings" subtitle="General bot configuration for this server" />
       <Card>

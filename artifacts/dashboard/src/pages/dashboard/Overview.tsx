@@ -38,7 +38,7 @@ export default function Overview() {
   const s = data.stats;
 
   return (
-    <div style={{ padding: "32px 32px 48px" }}>
+    <div className="dash-page" style={{ paddingBottom: 48 }}>
       <PageHeader title="Overview" subtitle={`Dashboard for ${guild?.name}`} />
 
       {/* Bot status bar */}

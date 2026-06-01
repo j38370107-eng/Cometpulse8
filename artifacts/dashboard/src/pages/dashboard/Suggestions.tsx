@@ -70,7 +70,7 @@ export default function Suggestions() {
   );
 
   return (
-    <div style={{ padding: "24px 28px", maxWidth: 720 }}>
+    <div className="dash-page" style={{ maxWidth: 720 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
         <div style={{ width: 38, height: 38, borderRadius: 10, background: "rgba(88,101,242,0.15)", border: "1.5px solid rgba(88,101,242,0.4)", display: "flex", alignItems: "center", justifyContent: "center" }}>
           <Lightbulb size={18} color="#5865F2" />
