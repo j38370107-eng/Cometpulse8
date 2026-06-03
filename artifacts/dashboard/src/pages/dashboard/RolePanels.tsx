@@ -644,22 +644,17 @@ export default function RolePanels() {
                     <Send size={13} /> {posting ? "Posting…" : draft.messageId ? "Repost" : "Post Panel"}
                   </button>
                 </div>
-                {!botOnline && (
-                  <div style={{ fontSize: 12, color: "#f59e0b", marginBottom: 6 }}>
-                    ⚠️ Bot is offline — add your <strong>DISCORD_BOT_TOKEN</strong> in Secrets to enable posting.
-                  </div>
+                {postMsg && postMsg.startsWith("✅") && (
+                  <div style={{ fontSize: 12, marginTop: 6, color: "#10b981" }}>{postMsg}</div>
                 )}
-                {postMsg && <div style={{ fontSize: 12, marginTop: 6, color: postMsg.startsWith("✅") ? "#10b981" : "#ef4444" }}>{postMsg}</div>}
-                {botOnline && (!draft.channelId || draft.roles.length === 0) && (
+                {(!draft.channelId || draft.roles.length === 0) && (
                   <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 4 }}>
                     {!draft.channelId ? "⚠️ Set a channel first." : "⚠️ Add at least one role first."}
                   </div>
                 )}
-                {botOnline && (
-                  <p style={{ fontSize: 11, color: "var(--text-muted)", margin: "8px 0 0" }}>
-                    Make sure to save the panel first. The bot must have Manage Roles (and Manage Messages for reactions).
-                  </p>
-                )}
+                <p style={{ fontSize: 11, color: "var(--text-muted)", margin: "8px 0 0" }}>
+                  Make sure to save the panel first. The bot must have Manage Roles (and Manage Messages for reactions).
+                </p>
               </Card>
             )}
 

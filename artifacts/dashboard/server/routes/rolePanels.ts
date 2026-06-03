@@ -87,24 +87,16 @@ router.delete("/:guildId/role-panels/:panelId", ...auth, async (req: any, res: a
 });
 
 async function callBot(path: string, opts?: RequestInit): Promise<{ ok: boolean; status: number; body: any }> {
-  const botPort = process.env["BOT_PORT"] ?? process.env["PORT"] ?? "3000";
+  const base = (process.env["BOT_API_URL"] ?? "http://localhost:3000").replace(/\/$/, "");
   let r: Response;
   try {
-    r = await fetch(`http://127.0.0.1:${botPort}${path}`, opts);
+    r = await fetch(`${base}${path}`, opts);
   } catch (err: any) {
-    return { ok: false, status: 503, body: { error: "Bot not reachable: " + err.message } };
+    return { ok: false, status: 503, body: { error: "Bot not reachable" } };
   }
   const text = await r.text().catch(() => "");
   let body: any;
-  try {
-    body = JSON.parse(text);
-  } catch {
-    if (!r.ok) {
-      body = { error: "Bot not connected or starting up (status " + r.status + ")" };
-    } else {
-      body = { error: "Unexpected response from bot" };
-    }
-  }
+  try { body = JSON.parse(text); } catch { body = { error: "Bot not reachable" }; }
   return { ok: r.ok, status: r.status, body };
 }
 

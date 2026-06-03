@@ -80,7 +80,8 @@ router.put("/:guildId/settings", ...auth, async (req: any, res: any) => {
   if ("serverLogChannelId" in req.body) updated.serverLogChannelId = serverLogChannelId;
   if (automodWarnExpiryMs !== undefined) updated.automodWarnExpiryMs = automodWarnExpiryMs;
   await dbSet("settings", guildId, updated);
-  fetch(`http://localhost:3000/internal/reload/${guildId}`).catch(() => {});
+  const _botUrl = (process.env["BOT_API_URL"] ?? "http://localhost:3000").replace(/\/$/, "");
+  fetch(`${_botUrl}/internal/reload/${guildId}`).catch(() => {});
   res.json({ ok: true });
 });
 
@@ -471,7 +472,8 @@ router.put("/:guildId/rank-card-config", ...auth, async (req: any, res: any) => 
   if (accentColor !== undefined) updated.accentColor = accentColor;
   if (bgImageUrl !== undefined) updated.bgImageUrl = bgImageUrl;
   await dbSet("rankCardConfig", guildId, updated);
-  fetch(`http://localhost:3000/internal/reload-rank-card/${guildId}`).catch(() => {});
+  const _botUrl2 = (process.env["BOT_API_URL"] ?? "http://localhost:3000").replace(/\/$/, "");
+  fetch(`${_botUrl2}/internal/reload-rank-card/${guildId}`).catch(() => {});
   res.json({ ok: true });
 });
 
@@ -688,7 +690,8 @@ router.put("/:guildId/starboard", ...auth, async (req: any, res: any) => {
   const existing = (await dbGet<any>("starboardConfig", guildId)) ?? {};
   const updated = { ...existing, ...req.body };
   await dbSet("starboardConfig", guildId, updated);
-  await fetch(`http://localhost:3000/internal/reload`, {
+  const _botUrl3 = (process.env["BOT_API_URL"] ?? "http://localhost:3000").replace(/\/$/, "");
+  await fetch(`${_botUrl3}/internal/reload`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ store: "starboardConfig", guildId }),
@@ -712,7 +715,8 @@ router.put("/:guildId/suggestions/config", ...auth, async (req: any, res: any) =
   const existing = (await dbGet<any>("suggestionConfig", guildId)) ?? {};
   const updated = { ...existing, ...req.body };
   await dbSet("suggestionConfig", guildId, updated);
-  await fetch(`http://localhost:3000/internal/reload`, {
+  const _botUrl4 = (process.env["BOT_API_URL"] ?? "http://localhost:3000").replace(/\/$/, "");
+  await fetch(`${_botUrl4}/internal/reload`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ store: "suggestionConfig", guildId }),

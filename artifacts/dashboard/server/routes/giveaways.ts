@@ -68,7 +68,8 @@ router.post("/:guildId/giveaways/:id/cancel", ...auth, async (req: any, res: any
   if (g.ended || g.cancelled) return res.status(400).json({ error: "Giveaway already ended" });
   await dbSet("giveaways", `${guildId}:${id}`, { ...g, cancelled: true, ended: true });
   // Signal bot to cancel timer
-  fetch(`http://localhost:3000/internal/giveaway-cancel/${guildId}/${id}`).catch(() => {});
+  const _botUrl = (process.env["BOT_API_URL"] ?? "http://localhost:3000").replace(/\/$/, "");
+  fetch(`${_botUrl}/internal/giveaway-cancel/${guildId}/${id}`).catch(() => {});
   res.json({ ok: true });
 });
 
@@ -80,7 +81,8 @@ router.post("/:guildId/giveaways/:id/reroll", ...auth, async (req: any, res: any
   if (!g.ended) return res.status(400).json({ error: "Giveaway has not ended yet" });
   // Signal bot to reroll
   try {
-    const r = await fetch(`http://localhost:3000/internal/giveaway-reroll/${guildId}/${id}`);
+    const _botUrl2 = (process.env["BOT_API_URL"] ?? "http://localhost:3000").replace(/\/$/, "");
+    const r = await fetch(`${_botUrl2}/internal/giveaway-reroll/${guildId}/${id}`);
     const data = await r.json();
     res.json(data);
   } catch {
