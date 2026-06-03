@@ -86,20 +86,33 @@ router.delete("/:guildId/role-panels/:panelId", ...auth, async (req: any, res: a
   res.json({ ok: true });
 });
 
+async function callBot(path: string, opts?: RequestInit): Promise<{ ok: boolean; status: number; body: any }> {
+  const botPort = process.env["BOT_PORT"] ?? process.env["PORT"] ?? "3000";
+  let r: Response;
+  try {
+    r = await fetch(`http://127.0.0.1:${botPort}${path}`, opts);
+  } catch (err: any) {
+    return { ok: false, status: 503, body: { error: "Bot not reachable: " + err.message } };
+  }
+  const text = await r.text().catch(() => "");
+  let body: any;
+  try {
+    body = JSON.parse(text);
+  } catch {
+    if (!r.ok) {
+      body = { error: "Bot not connected or starting up (status " + r.status + ")" };
+    } else {
+      body = { error: "Unexpected response from bot" };
+    }
+  }
+  return { ok: r.ok, status: r.status, body };
+}
+
 // POST to channel (calls bot internal API)
 router.post("/:guildId/role-panels/:panelId/post", ...auth, async (req: any, res: any) => {
   const { guildId, panelId } = req.params;
-  try {
-    const botPort = process.env["BOT_PORT"] ?? process.env["PORT"] ?? "3000";
-    const r = await fetch(`http://localhost:${botPort}/internal/post-role-panel/${guildId}/${panelId}`, {
-      method: "POST",
-    });
-    const json = await r.json();
-    if (!r.ok) return res.status(r.status).json(json);
-    res.json(json);
-  } catch (err: any) {
-    res.status(503).json({ error: "Bot not reachable: " + err.message });
-  }
+  const { ok, status, body } = await callBot(`/internal/post-role-panel/${guildId}/${panelId}`, { method: "POST" });
+  res.status(ok ? 200 : status).json(body);
 });
 
 // POST attach reactions to an existing message by ID (reaction panels only)
@@ -107,19 +120,12 @@ router.post("/:guildId/role-panels/:panelId/attach", ...auth, async (req: any, r
   const { guildId, panelId } = req.params;
   const { messageId, channelId } = req.body as { messageId?: string; channelId?: string };
   if (!messageId) return res.status(400).json({ error: "messageId is required" });
-  try {
-    const botPort = process.env["BOT_PORT"] ?? process.env["PORT"] ?? "3000";
-    const r = await fetch(`http://localhost:${botPort}/internal/attach-role-panel/${guildId}/${panelId}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ messageId, channelId }),
-    });
-    const json = await r.json();
-    if (!r.ok) return res.status(r.status).json(json);
-    res.json(json);
-  } catch (err: any) {
-    res.status(503).json({ error: "Bot not reachable: " + err.message });
-  }
+  const { ok, status, body } = await callBot(`/internal/attach-role-panel/${guildId}/${panelId}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ messageId, channelId }),
+  });
+  res.status(ok ? 200 : status).json(body);
 });
 
 export default router;
