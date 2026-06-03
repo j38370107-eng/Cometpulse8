@@ -112,19 +112,22 @@ export default function RolePanels() {
   const [attachMsg, setAttachMsg] = useState("");
   const [editingRole, setEditingRole] = useState<number | null>(null);
   const [roleDraft, setRoleDraft] = useState<PanelRole | null>(null);
+  const [botOnline, setBotOnline] = useState(false);
 
   const load = async () => {
     if (!guildId) return;
     setLoading(true);
     try {
-      const [ps, ch, ro] = await Promise.all([
+      const [ps, ch, ro, stats] = await Promise.all([
         api.guild.rolePanels(guildId),
         api.guild.channels(guildId),
         api.guild.roles(guildId),
+        api.stats().catch(() => null),
       ]);
       setPanels(ps);
       setChannels(ch.filter((c: any) => c.type === 0));
       setRoles(ro.filter((r: any) => r.name !== "@everyone"));
+      setBotOnline(stats?.status === "online" || stats?.status === "degraded");
     } catch {}
     setLoading(false);
   };
@@ -628,23 +631,35 @@ export default function RolePanels() {
                       {draft.messageId ? `Currently posted (Message ID: ${draft.messageId})` : "Not posted yet."}
                     </div>
                   </div>
-                  <button onClick={postPanel} disabled={posting || !draft.channelId || draft.roles.length === 0} style={{
-                    display: "flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 7, fontSize: 12, fontWeight: 700,
-                    background: "#10b981", border: "none", color: "#fff", cursor: posting || !draft.channelId || draft.roles.length === 0 ? "not-allowed" : "pointer",
-                    opacity: posting || !draft.channelId || draft.roles.length === 0 ? 0.5 : 1,
-                  }}>
+                  <button
+                    onClick={postPanel}
+                    disabled={posting || !draft.channelId || draft.roles.length === 0 || !botOnline}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 7, fontSize: 12, fontWeight: 700,
+                      background: botOnline ? "#10b981" : "#374151", border: "none", color: "#fff",
+                      cursor: posting || !draft.channelId || draft.roles.length === 0 || !botOnline ? "not-allowed" : "pointer",
+                      opacity: posting || !draft.channelId || draft.roles.length === 0 || !botOnline ? 0.5 : 1,
+                    }}
+                  >
                     <Send size={13} /> {posting ? "Posting…" : draft.messageId ? "Repost" : "Post Panel"}
                   </button>
                 </div>
+                {!botOnline && (
+                  <div style={{ fontSize: 12, color: "#f59e0b", marginBottom: 6 }}>
+                    ⚠️ Bot is offline — add your <strong>DISCORD_BOT_TOKEN</strong> in Secrets to enable posting.
+                  </div>
+                )}
                 {postMsg && <div style={{ fontSize: 12, marginTop: 6, color: postMsg.startsWith("✅") ? "#10b981" : "#ef4444" }}>{postMsg}</div>}
-                {(!draft.channelId || draft.roles.length === 0) && (
+                {botOnline && (!draft.channelId || draft.roles.length === 0) && (
                   <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 4 }}>
                     {!draft.channelId ? "⚠️ Set a channel first." : "⚠️ Add at least one role first."}
                   </div>
                 )}
-                <p style={{ fontSize: 11, color: "var(--text-muted)", margin: "8px 0 0" }}>
-                  Make sure to save the panel first. The bot must have Manage Roles (and Manage Messages for reactions).
-                </p>
+                {botOnline && (
+                  <p style={{ fontSize: 11, color: "var(--text-muted)", margin: "8px 0 0" }}>
+                    Make sure to save the panel first. The bot must have Manage Roles (and Manage Messages for reactions).
+                  </p>
+                )}
               </Card>
             )}
 
