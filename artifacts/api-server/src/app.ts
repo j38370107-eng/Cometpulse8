@@ -87,11 +87,35 @@ app.get('/internal/giveaway-reroll/:guildId/:id', async (req: any, res: any) => 
 let _panelClient: Client | null = null;
 export function setPanelClient(client: Client): void { _panelClient = client; }
 
+// Reload all panels for a guild from DB into the in-memory cache
+app.post("/internal/reload-role-panels/:guildId", async (req: any, res: any) => {
+  const { guildId } = req.params;
+  try {
+    const data = await dbGet<Record<string, any>>("rolePanels", guildId);
+    if (data) {
+      for (const panel of Object.values(data)) {
+        savePanel(panel);
+        indexPanel(panel);
+      }
+    }
+    res.json({ ok: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.post("/internal/post-role-panel/:guildId/:panelId", async (req: any, res: any) => {
   if (!_panelClient) return res.status(503).json({ error: "Bot not connected" });
   const { guildId, panelId } = req.params;
   try {
-    const panel = getPanel(guildId, panelId);
+    // Try cache first; fall back to DB so dashboard-saved panels are found even
+    // when the bot cache hasn't been explicitly reloaded yet.
+    let panel = getPanel(guildId, panelId);
+    if (!panel) {
+      const data = await dbGet<Record<string, any>>("rolePanels", guildId);
+      panel = data?.[panelId] ?? null;
+      if (panel) { savePanel(panel); indexPanel(panel); }
+    }
     if (!panel) return res.status(404).json({ error: "Panel not found" });
     if (!panel.roles.length) return res.status(400).json({ error: "No roles added to panel" });
 
@@ -131,7 +155,12 @@ app.post("/internal/attach-role-panel/:guildId/:panelId", async (req: any, res: 
   if (!messageId) return res.status(400).json({ error: "messageId is required" });
 
   try {
-    const panel = getPanel(guildId, panelId);
+    let panel = getPanel(guildId, panelId);
+    if (!panel) {
+      const data = await dbGet<Record<string, any>>("rolePanels", guildId);
+      panel = data?.[panelId] ?? null;
+      if (panel) { savePanel(panel); indexPanel(panel); }
+    }
     if (!panel) return res.status(404).json({ error: "Panel not found" });
     if (panel.type !== "reaction") return res.status(400).json({ error: "Only reaction panels can be attached to existing messages" });
     if (!panel.roles.length) return res.status(400).json({ error: "No roles added to panel" });

@@ -63,6 +63,8 @@ router.post("/:guildId/role-panels", ...auth, async (req: any, res: any) => {
   };
   existing[id] = panel;
   await dbSet(STORE, guildId, existing);
+  // Sync bot cache so the new panel is immediately available for posting
+  callBot(`/internal/reload-role-panels/${guildId}`, { method: "POST" }).catch(() => {});
   res.json(panel);
 });
 
@@ -73,6 +75,8 @@ router.put("/:guildId/role-panels/:panelId", ...auth, async (req: any, res: any)
   if (!existing[panelId]) return res.status(404).json({ error: "Panel not found" });
   existing[panelId] = { ...existing[panelId], ...req.body, id: panelId, guildId };
   await dbSet(STORE, guildId, existing);
+  // Sync bot cache so the updated panel is immediately available for posting
+  callBot(`/internal/reload-role-panels/${guildId}`, { method: "POST" }).catch(() => {});
   res.json(existing[panelId]);
 });
 
