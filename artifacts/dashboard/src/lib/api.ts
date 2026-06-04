@@ -83,5 +83,14 @@ export const api = {
     commandConfig: (id: string) => request<any>(`/guilds/${id}/command-config`),
     updateCommandConfig: (id: string, data: any) =>
       request<any>(`/guilds/${id}/command-config`, { method: "PUT", body: JSON.stringify(data) }),
+    countingConfig: (id: string) => request<any>(`/guilds/${id}/counting/config`),
+    updateCountingConfig: (id: string, data: any) =>
+      request<any>(`/guilds/${id}/counting/config`, { method: "PUT", body: JSON.stringify(data) }),
+    countingState: (id: string) => request<any>(`/guilds/${id}/counting/state`),
+    countingStats: (id: string) => request<any[]>(`/guilds/${id}/counting/stats`),
+    countingSetCount: (id: string, count: number) =>
+      request<any>(`/guilds/${id}/counting/set-count`, { method: "POST", body: JSON.stringify({ count }) }),
+    countingReset: (id: string, resetStats: boolean) =>
+      request<any>(`/guilds/${id}/counting/reset`, { method: "POST", body: JSON.stringify({ resetStats }) }),
   },
 };

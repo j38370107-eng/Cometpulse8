@@ -16,6 +16,7 @@ import Starboard from "./pages/dashboard/Starboard";
 import Suggestions from "./pages/dashboard/Suggestions";
 import EmbedBuilder from "./pages/dashboard/EmbedBuilder";
 import Commands from "./pages/dashboard/Commands";
+import Counting from "./pages/dashboard/Counting";
 
 interface AuthCtx {
   user: any | null;
@@ -140,6 +141,7 @@ export default function App() {
               <Route path="suggestions" element={<Suggestions />} />
               <Route path="embed-builder" element={<EmbedBuilder />} />
               <Route path="commands" element={<Commands />} />
+              <Route path="counting" element={<Counting />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
