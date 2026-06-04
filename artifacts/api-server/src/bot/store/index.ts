@@ -29,6 +29,7 @@ import { initRankCardConfigStore } from "./rankCardConfig";
 import { initStarboardStore } from "./starboard";
 import { initSuggestionsStore } from "./suggestions";
 import { initEmbedBuilderStore } from "./embedBuilder";
+import { initCountingStore } from "./counting";
 import { logger } from "../../lib/logger";
 
 export async function initAllStores(): Promise<void> {
@@ -65,6 +66,7 @@ export async function initAllStores(): Promise<void> {
     initStarboardStore(),
     initSuggestionsStore(),
     initEmbedBuilderStore(),
+    initCountingStore(),
   ]);
   logger.info("All stores initialised from PostgreSQL");
 }

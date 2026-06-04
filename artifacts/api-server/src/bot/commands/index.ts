@@ -26,6 +26,12 @@ import {
   suggestionsConfigCommand, viewSuggestionCommand, suggestionsLeaderboardCommand,
 } from "./suggestions/reviewSuggestion";
 import { embedCommand } from "./embed/embed";
+import { countsetCommand, countdisableCommand } from "./counting/countset";
+import { countmodeCommand } from "./counting/countmode";
+import { countconfigCommand } from "./counting/countconfig";
+import { countstatsCommand } from "./counting/countstats";
+import { countleaderboardCommand } from "./counting/countleaderboard";
+import { setcountCommand, resetcountCommand } from "./counting/countadmin";
 
 export const commands: Command[] = [
   helpCommand,
@@ -60,6 +66,14 @@ export const commands: Command[] = [
   duplicateCommand,
   deleteSuggestionCommand,
   embedCommand,
+  countsetCommand,
+  countdisableCommand,
+  countmodeCommand,
+  countconfigCommand,
+  countstatsCommand,
+  countleaderboardCommand,
+  setcountCommand,
+  resetcountCommand,
 ];
 
 export function loadCommands(client: Client) {

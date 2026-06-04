@@ -18,6 +18,7 @@ import { registerRolePanelInteractions } from "./rolePanelInteractions";
 import { registerStarboardEvents } from "./starboardEvents";
 import { registerSuggestionVotes } from "./suggestionVotes";
 import { registerEmbedButtons } from "./embedButtons";
+import { registerCountingEvents } from "./countingEvents";
 export function registerEvents(client: Client) {
   registerReadyHandler(client);
   registerMessageHandler(client);
@@ -38,4 +39,5 @@ export function registerEvents(client: Client) {
   registerStarboardEvents(client);
   registerSuggestionVotes(client);
   registerEmbedButtons(client);
+  registerCountingEvents(client);
 }
