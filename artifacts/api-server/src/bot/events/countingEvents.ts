@@ -47,30 +47,46 @@ export function registerCountingEvents(client: Client): void {
       }
 
       await addCountingFail(guildId, message.author.id);
-      await setCountingState(guildId, {
-        currentCount: resetTo,
-        totalFails: newFails,
-        lastFailUserId: message.author.id,
-        lastUserId: null,
-        lastMessageId: null,
-        lastCheckpoint: 0,
-      });
+
+      if (config.resetOnFail) {
+        // Reset the count — preserve checkpoint so the next failure also resets
+        // to the same checkpoint (not all the way to 0).
+        await setCountingState(guildId, {
+          currentCount: resetTo,
+          totalFails: newFails,
+          lastFailUserId: message.author.id,
+          lastUserId: null,
+          lastMessageId: null,
+          lastCheckpoint: resetTo,
+        });
+      } else {
+        // Don't reset the count — just record the fail
+        await setCountingState(guildId, {
+          totalFails: newFails,
+          lastFailUserId: message.author.id,
+        });
+      }
 
       const channel = message.channel as TextChannel;
 
       if (config.resetOnFail) {
         const resetMsg = config.checkpointInterval > 0 && resetTo > 0
-          ? `❌ <@${message.author.id}> ruined the count at **${state.currentCount}**! Resetting back to the checkpoint at **${resetTo}**. Start from **${formatCount(resetTo + 1, config.mode)}**.`
+          ? `❌ <@${message.author.id}> made a mistake at **${state.currentCount}**! Resetting back to the checkpoint at **${resetTo}**. Start from **${formatCount(resetTo + 1, config.mode)}**.`
           : `❌ <@${message.author.id}> ruined the count at **${state.currentCount}**! Starting back from **${formatCount(1, config.mode)}**.`;
         await channel.send(resetMsg).catch(() => {});
+      } else {
+        await channel.send(
+          `❌ <@${message.author.id}> made a mistake! The count stays at **${formatCount(state.currentCount, config.mode)}**. Next: **${formatCount(expected, config.mode)}**.`
+        ).catch(() => {});
       }
 
-      // DM the person who ruined it
+      // DM the person who made the mistake
       if (config.failPunishment !== "nothing") {
+        const dmMsg = config.resetOnFail
+          ? `😬 You ruined the count in **${message.guild.name}** at **${state.currentCount}**! The count has been reset.`
+          : `😬 You made a mistake in the counting channel in **${message.guild.name}** at **${state.currentCount}**!`;
         try {
-          await message.author.send(
-            `😬 You ruined the count in **${message.guild.name}** at **${state.currentCount}**! The count has been reset.`
-          );
+          await message.author.send(dmMsg);
         } catch { /* DMs closed */ }
       }
 
@@ -80,7 +96,8 @@ export function registerCountingEvents(client: Client): void {
       }
 
       if (config.updateTopic) {
-        await updateChannelTopic(channel, resetTo, state.highScore);
+        const topicCount = config.resetOnFail ? resetTo : state.currentCount;
+        await updateChannelTopic(channel, topicCount, state.highScore);
       }
 
       return;
