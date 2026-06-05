@@ -58,6 +58,10 @@ export const DEFAULT_WELCOME_CONFIG: WelcomeConfig = {
 
 const cache = new Map<string, WelcomeConfig>();
 
+export function clearWelcomeCache(guildId: string): void {
+  cache.delete(guildId);
+}
+
 export async function getWelcomeConfig(guildId: string): Promise<WelcomeConfig> {
   if (cache.has(guildId)) return cache.get(guildId)!;
   const stored = await dbGet<WelcomeConfig>(STORE, guildId);

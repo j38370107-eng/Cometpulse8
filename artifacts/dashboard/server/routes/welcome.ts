@@ -56,6 +56,8 @@ router.put("/:guildId/welcome", ...auth, async (req: any, res: any) => {
   const { guildId } = req.params;
   const existing = (await dbGet<any>("welcome", guildId)) ?? {};
   await dbSet("welcome", guildId, { ...existing, ...req.body });
+  const botUrl = (process.env["BOT_API_URL"] ?? "http://localhost:3000").replace(/\/$/, "");
+  fetch(`${botUrl}/internal/reload-welcome/${guildId}`, { method: "POST" }).catch(() => {});
   res.json({ ok: true });
 });
 
