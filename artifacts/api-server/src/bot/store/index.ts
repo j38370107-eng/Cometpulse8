@@ -26,6 +26,7 @@ import { initLevelsStore } from "./levels";
 import { initGiveawaysStore } from "./giveaways";
 import { initRolePanelStore } from "./rolePanel";
 import { initRankCardConfigStore } from "./rankCardConfig";
+import { initBumpReminderStore } from "./bumpReminder";
 import { initStarboardStore } from "./starboard";
 import { initSuggestionsStore } from "./suggestions";
 import { initEmbedBuilderStore } from "./embedBuilder";
@@ -63,6 +64,7 @@ export async function initAllStores(): Promise<void> {
     initGiveawaysStore(),
     initRolePanelStore(),
     initRankCardConfigStore(),
+    initBumpReminderStore(),
     initStarboardStore(),
     initSuggestionsStore(),
     initEmbedBuilderStore(),

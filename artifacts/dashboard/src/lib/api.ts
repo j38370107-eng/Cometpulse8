@@ -92,5 +92,9 @@ export const api = {
       request<any>(`/guilds/${id}/counting/set-count`, { method: "POST", body: JSON.stringify({ count }) }),
     countingReset: (id: string, resetStats: boolean) =>
       request<any>(`/guilds/${id}/counting/reset`, { method: "POST", body: JSON.stringify({ resetStats }) }),
+    bumpReminderConfig: (id: string) => request<any>(`/guilds/${id}/bump-reminder/config`),
+    updateBumpReminderConfig: (id: string, data: any) =>
+      request<any>(`/guilds/${id}/bump-reminder/config`, { method: "PUT", body: JSON.stringify(data) }),
+    bumpReminderState: (id: string) => request<any>(`/guilds/${id}/bump-reminder/state`),
   },
 };

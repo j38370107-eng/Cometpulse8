@@ -17,6 +17,7 @@ import Suggestions from "./pages/dashboard/Suggestions";
 import EmbedBuilder from "./pages/dashboard/EmbedBuilder";
 import Commands from "./pages/dashboard/Commands";
 import Counting from "./pages/dashboard/Counting";
+import BumpReminder from "./pages/dashboard/BumpReminder";
 
 interface AuthCtx {
   user: any | null;
@@ -142,6 +143,7 @@ export default function App() {
               <Route path="embed-builder" element={<EmbedBuilder />} />
               <Route path="commands" element={<Commands />} />
               <Route path="counting" element={<Counting />} />
+              <Route path="bump-reminder" element={<BumpReminder />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

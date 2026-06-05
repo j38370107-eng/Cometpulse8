@@ -19,6 +19,7 @@ import { registerStarboardEvents } from "./starboardEvents";
 import { registerSuggestionVotes } from "./suggestionVotes";
 import { registerEmbedButtons } from "./embedButtons";
 import { registerCountingEvents } from "./countingEvents";
+import { registerBumpReminderEvents } from "./bumpReminderEvents";
 export function registerEvents(client: Client) {
   registerReadyHandler(client);
   registerMessageHandler(client);
@@ -40,4 +41,5 @@ export function registerEvents(client: Client) {
   registerSuggestionVotes(client);
   registerEmbedButtons(client);
   registerCountingEvents(client);
+  registerBumpReminderEvents(client);
 }
