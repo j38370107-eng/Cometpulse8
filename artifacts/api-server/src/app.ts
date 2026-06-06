@@ -5,7 +5,6 @@ import router from "./routes";
 import { logger } from "./lib/logger";
 import { reloadGuildSettings } from "./bot/store/settings";
 import { clearWelcomeCache } from "./bot/store/welcome";
-import { reloadBumpReminderConfig } from "./bot/store/bumpReminder";
 import { dbGet, dbSet } from "./bot/store/db";
 import { setRankCardConfig } from "./bot/store/rankCardConfig";
 import { endGiveaway, rerollGiveaway, cancelTimer } from "./bot/giveaway/manager";
@@ -44,15 +43,6 @@ app.get('/ping', (req, res) => res.send('OK'));
 app.post('/internal/reload/:guildId', async (req: any, res: any) => {
   try {
     await reloadGuildSettings(req.params.guildId);
-    res.json({ ok: true });
-  } catch {
-    res.status(500).json({ error: "reload failed" });
-  }
-});
-
-app.post('/internal/reload-bump-reminder/:guildId', async (req: any, res: any) => {
-  try {
-    await reloadBumpReminderConfig(req.params.guildId);
     res.json({ ok: true });
   } catch {
     res.status(500).json({ error: "reload failed" });

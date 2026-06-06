@@ -39,8 +39,6 @@ router.put("/:guildId/bump-reminder/config", ...auth, async (req: any, res: any)
   const existing = (await dbGet<any>(CONFIG_STORE, guildId)) ?? {};
   const updated = { ...CONFIG_DEFAULTS, ...existing, ...req.body };
   await dbSet(CONFIG_STORE, guildId, updated);
-  const botUrl = (process.env["BOT_API_URL"] ?? "http://localhost:3000").replace(/\/$/, "");
-  fetch(`${botUrl}/internal/reload-bump-reminder/${guildId}`, { method: "POST" }).catch(() => {});
   res.json({ ok: true });
 });
 

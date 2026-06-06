@@ -57,11 +57,6 @@ export async function setBumpReminderConfig(guildId: string, config: Partial<Bum
   await dbSet(BUMP_CONFIG_STORE, guildId, updated);
 }
 
-export async function reloadBumpReminderConfig(guildId: string): Promise<void> {
-  const stored = await dbGet<BumpReminderConfig>(BUMP_CONFIG_STORE, guildId);
-  configCache.set(guildId, { ...defaultConfig(), ...(stored ?? {}) });
-}
-
 export function getBumpReminderState(guildId: string): BumpReminderState {
   return stateCache.get(guildId) ?? defaultState();
 }
