@@ -38,7 +38,11 @@ async function sendReminder(client: Client, guildId: string): Promise<void> {
     .setTimestamp();
 
   try {
-    const msg = await channel.send({ content, embeds: [embed] });
+    const msg = await channel.send({
+      content,
+      embeds: [embed],
+      allowedMentions: { roles: config.roleId ? [config.roleId] : [] },
+    });
     await setBumpReminderState(guildId, { reminderMessageId: msg.id });
     logger.info({ guildId }, "Bump reminder sent");
   } catch (err) {
